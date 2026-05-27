@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alchemist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Noto+Serif+SC:wght@300;400;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0907;--sf:#151210;--s2:#1e1a16;--s3:#272219;--ac:#c9a227;--ag:#c9a22744;--al:#e8c547;--tx:#f0ece4;--tm:#8a8279;--td:#5a554e;--dg:#b34040;--ok:#5a9a5a;--bd:#2a2520;--r:8px;--rl:16px;--fd:'Playfair Display','Noto Serif SC',serif;--fb:'Noto Serif SC','Playfair Display',serif;--fm:'DM Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--s3) var(--bg)}
+body{font-family:var(--fb);background:var(--bg);color:var(--tx);min-height:100vh;line-height:1.7;font-weight:300}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 15% 20%,#1a0f05,transparent 50%),radial-gradient(ellipse at 85% 80%,#0f0a14,transparent 50%);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;inset:0;opacity:.035;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 24px}
+header{padding:52px 0 32px;text-align:center}
+header::after{content:'';display:block;width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--ac),transparent);margin:24px auto 0}
+.logo-g{display:inline-block;margin-bottom:10px;animation:fl 4s ease-in-out infinite;cursor:pointer;transition:filter .3s,transform .3s}
+.logo-g:hover{filter:drop-shadow(0 0 12px rgba(201,162,39,.5));transform:translateY(-6px) scale(1.05)}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+h1{font-family:var(--fd);font-weight:900;font-size:clamp(1.7rem,5vw,2.8rem);letter-spacing:.08em;text-transform:uppercase}
+h1 span{color:var(--ac)}
+.sub{font-family:var(--fm);font-size:.76rem;color:var(--tm);letter-spacing:.3em;text-transform:uppercase;margin-top:6px}
+.tbar{display:flex;gap:10px;margin-bottom:18px;align-items:center;flex-wrap:wrap}
+.sb{flex:1;min-width:160px;position:relative}
+.sb input{width:100%;padding:11px 16px 11px 42px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:var(--fb);font-size:.92rem;outline:none;transition:border-color .3s,box-shadow .3s}
+.sb input::placeholder{color:var(--td)}.sb input:focus{border-color:var(--ac);box-shadow:0 0 0 3px var(--ag)}
+.sb::before{content:'';position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8279' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10.5' cy='10.5' r='7'/%3E%3Cline x1='15.5' y1='15.5' x2='21' y2='21'/%3E%3C/svg%3E");background-size:contain;background-repeat:no-repeat;pointer-events:none}
+.ba{display:flex;align-items:center;gap:8px;padding:11px 22px;background:var(--ac);color:var(--bg);border:none;border-radius:var(--r);font-family:var(--fd);font-weight:600;font-size:.92rem;cursor:pointer;transition:all .25s;white-space:nowrap}
+.ba:hover{background:var(--al);transform:translateY(-1px);box-shadow:0 4px 20px var(--ag)}
+.btn-m{display:flex;align-items:center;gap:5px;padding:10px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);color:var(--tm);font-family:var(--fb);font-size:.82rem;cursor:pointer;white-space:nowrap;transition:all .25s}
+.btn-m:hover{border-color:var(--ac);color:var(--ac);background:var(--s2)}
+.btn-m svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn-m.on{border-color:var(--ac);color:var(--ac);background:rgba(201,162,39,.08)}
+.sub-wrap{position:relative;display:inline-block;cursor:pointer;-webkit-touch-callout:none}
+.sub{display:inline;font-family:var(--fm);font-size:.76rem;color:var(--tm);letter-spacing:.3em;text-transform:uppercase;margin-top:6px;cursor:pointer;position:relative;transition:color .2s;user-select:none;-webkit-user-select:none}
+.sub::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--ac);border-radius:1px;transition:width 1s linear,opacity .1s;opacity:0}
+.sub.pressing::after{width:100%;opacity:1}
+.sub.active{color:var(--ac)}
+.dd-menu{display:none;position:absolute;z-index:100;background:var(--sf);border:1px solid var(--ac);border-radius:var(--r);min-width:170px;padding:6px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.dd-menu.show{display:block}
+.dd-sub{left:50%;transform:translateX(-50%);top:calc(100% + 10px)}
+.dd-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:6px;font-family:var(--fb);font-size:.85rem;color:var(--tm);cursor:pointer;transition:all .15s;white-space:nowrap}
+.dd-item:hover{background:var(--s2);color:var(--tx)}
+.dd-item svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.dd-sep{height:1px;background:var(--bd);margin:5px 8px}
+.cts{display:flex;gap:8px;margin-bottom:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:4px 0}
+.cts::-webkit-scrollbar{display:none}
+.cts .ct:first-child{position:sticky;left:0;z-index:2;flex-shrink:0;background:var(--bg);border-color:var(--bg)}
+.cts .ct:first-child.on{background:var(--ac);border-color:var(--ac)}
+.cts .ct:first-child::after{content:'';position:absolute;right:-16px;top:0;bottom:0;width:16px;background:linear-gradient(90deg,rgba(11,9,7,.9),transparent);pointer-events:none}
+.cts::after{content:'';position:sticky;right:0;top:0;width:48px;height:100%;flex-shrink:0;background:linear-gradient(90deg,transparent,var(--bg));pointer-events:none}
+.ct{display:flex;align-items:center;gap:6px;padding:9px 18px;background:var(--sf);border:1px solid var(--bd);border-radius:100px;color:var(--tm);font-family:var(--fb);font-size:.84rem;cursor:pointer;white-space:nowrap;transition:all .25s;flex-shrink:0}
+.ct:hover{border-color:var(--td);color:var(--tx)}.ct.on{background:var(--ac);border-color:var(--ac);color:var(--bg);font-weight:400}
+.ct .ce{font-size:1rem;line-height:1}.ct .cn{font-family:var(--fm);font-size:.62rem;background:var(--s3);padding:1px 7px;border-radius:10px;color:var(--td)}
+.ct.on .cn{background:rgba(0,0,0,.18);color:var(--bg)}
+.pf-bar{display:none;align-items:center;gap:12px;margin-bottom:16px;padding:10px 16px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);animation:fadeUp .3s ease}
+.pf-bar.show{display:flex!important}
+@keyframes fadeUp{from{opacity:0}to{opacity:1}}
+.pf-icon{font-size:1rem}.pf-text{font-family:var(--fm);font-size:.78rem;color:var(--tm)}.pf-text strong{color:var(--ac);font-weight:400}
+.pf-edit{background:none;border:1px solid var(--bd);border-radius:var(--r);color:var(--tm);font-family:var(--fm);font-size:.72rem;cursor:pointer;padding:5px 12px;transition:all .2s;white-space:nowrap}
+.pf-edit:hover{border-color:var(--ac);color:var(--ac)}
+.pf-reset{background:none;border:none;color:var(--td);font-family:var(--fm);font-size:.7rem;cursor:pointer;padding:5px 8px;border-radius:var(--r);transition:all .2s;white-space:nowrap}
+.pf-reset:hover{color:var(--dg);background:rgba(179,64,64,.08)}
+.gr{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;padding-bottom:80px}
+.cd{display:flex;flex-direction:column;background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);padding:26px 26px 0;cursor:pointer;position:relative;overflow:hidden;opacity:0;animation:ci .5s ease forwards;transition:all .35s cubic-bezier(.25,.46,.45,.94)}
+.cd:nth-child(1){animation-delay:0s}.cd:nth-child(2){animation-delay:.04s}.cd:nth-child(3){animation-delay:.08s}
+@keyframes ci{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.cd::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--ac),transparent);opacity:0;transition:opacity .35s}
+.cd:hover{border-color:var(--ac);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.4),0 0 0 1px var(--ag)}
+.cd:hover::before{opacity:1}
+.cd-glass{height:58px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:12px;transition:filter .3s}
+.cd:hover .cd-glass{filter:drop-shadow(0 0 10px rgba(201,162,39,.2))}
+.cd-cat-row{display:flex;justify-content:space-between;align-items:center;height:20px;flex-shrink:0;margin-bottom:4px}
+.ccb{display:inline-flex;align-items:center;gap:5px;font-family:var(--fm);font-size:.66rem;padding:2px 10px;border-radius:20px;background:var(--s3);border:1px solid var(--bd);color:var(--tm)}
+.cgn{font-family:var(--fm);font-size:.6rem;color:var(--td)}
+.cd-name{height:34px;flex-shrink:0;font-family:var(--fd);font-size:1.25rem;font-weight:700;line-height:1.2;overflow:hidden}
+.cd-en{height:18px;flex-shrink:0;font-family:var(--fm);font-size:.7rem;color:var(--td);letter-spacing:.06em;line-height:18px;overflow:hidden}
+.cd-desc{flex:1;min-height:40px;font-size:.84rem;color:var(--tm);line-height:1.6;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;padding-top:10px}
+.cd-foot{flex-shrink:0;display:flex;align-items:center;gap:8px;padding:14px 0;border-top:1px solid var(--bd);margin:0 -26px;padding-left:26px;padding-right:26px}
+.cd-foot .tags{display:flex;gap:5px;flex-wrap:wrap;flex:1;min-width:0}
+.tag{font-family:var(--fm);font-size:.6rem;padding:2px 8px;border:1px solid var(--bd);border-radius:20px;color:var(--tm);cursor:pointer;transition:all .2s;white-space:nowrap}
+.tag:hover{border-color:var(--td);color:var(--tx)}.tag.sl{color:#6dbf6d;border-color:#2a4a2a;background:#1a2e1a}.tag.sm{color:#bf9f4d;border-color:#4a3f2a;background:#2e2a1a}.tag.ss{color:#bf5d5d;border-color:#4a2a2a;background:#2e1a1a}
+.cd-foot .acts{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:opacity .25s}.cd:hover .cd-foot .acts{opacity:1}
+.act-btn{background:none;border:none;padding:4px 8px;font-family:var(--fm);font-size:.62rem;color:var(--td);cursor:pointer;border-radius:4px;transition:all .2s;white-space:nowrap}
+.act-btn:hover{color:var(--ac);background:rgba(201,162,39,.08)}.act-btn.del:hover{color:var(--dg);background:rgba(179,64,64,.08)}
+.emp{text-align:center;padding:80px 20px;grid-column:1/-1}.emp p{color:var(--td);font-family:var(--fm);font-size:.85rem;margin-top:12px}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:all .3s}.ov.on{opacity:1;visibility:visible}
+.mdl{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);width:100%;max-width:700px;max-height:90vh;overflow-y:auto;overscroll-behavior:contain;transform:translateY(20px) scale(.97);transition:transform .35s cubic-bezier(.25,.46,.45,.94);scrollbar-width:thin;scrollbar-color:var(--s3) var(--sf)}.ov.on .mdl{transform:translateY(0) scale(1)}
+.mh{padding:26px 30px 0;display:flex;justify-content:space-between;align-items:center}.mh h2{font-family:var(--fd);font-size:1.35rem;font-weight:700}
+.mc{width:36px;height:36px;border:1px solid var(--bd);border-radius:8px;background:transparent;color:var(--tm);cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}.mc:hover{border-color:var(--tm);color:var(--tx)}
+.mb{padding:22px 30px 30px}
+.fg{margin-bottom:18px}.fg label{display:block;font-family:var(--fm);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--tm);margin-bottom:6px}
+.fg input,.fg textarea,.fg select{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:var(--fb);font-size:.88rem;outline:none;transition:border-color .25s,box-shadow .25s}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--ac);box-shadow:0 0 0 3px var(--ag)}
+.fg textarea{resize:vertical;min-height:68px;line-height:1.6}
+.fg select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238a8279' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.fg select option{background:var(--sf)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.gp{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin-top:4px}
+.go{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;padding:8px 6px 7px;background:var(--bg);border:1.5px solid var(--bd);border-radius:var(--r);cursor:pointer;transition:all .2s;min-height:84px}
+.go:hover{border-color:var(--td);background:var(--s2)}.go.sel{border-color:var(--ac);background:var(--s3);box-shadow:0 0 12px var(--ag)}
+.go-icon{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:44px}
+.go svg{transition:filter .2s}.go.sel svg{filter:drop-shadow(0 0 8px rgba(201,162,39,.3))}
+.go span{font-family:var(--fm);font-size:.58rem;color:var(--td);text-align:center;line-height:1.2;flex-shrink:0}.go.sel span{color:var(--ac)}
+.il,.sl2{display:flex;flex-direction:column;gap:8px}
+.ir{display:flex;gap:8px;align-items:center}.ir input:first-child{flex:1}.ir input:nth-child(2){width:110px}
+.rm{width:32px;height:32px;flex-shrink:0;border:1px solid var(--bd);border-radius:6px;background:transparent;color:var(--td);cursor:pointer;font-size:.95rem;display:flex;align-items:center;justify-content:center;transition:all .2s}.rm:hover{border-color:var(--dg);color:var(--dg)}
+.ar{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:transparent;border:1px dashed var(--bd);border-radius:var(--r);color:var(--tm);font-family:var(--fm);font-size:.73rem;cursor:pointer;transition:all .2s;margin-top:6px}.ar:hover{border-color:var(--ac);color:var(--ac)}
+.sr{display:flex;gap:10px;align-items:flex-start}
+.sn{width:26px;height:26px;flex-shrink:0;border-radius:50%;border:1px solid var(--ac);color:var(--ac);font-family:var(--fm);font-size:.7rem;display:flex;align-items:center;justify-content:center;margin-top:8px}
+.sr textarea{flex:1;min-height:42px;resize:vertical}
+.fa{display:flex;gap:12px;justify-content:flex-end;margin-top:22px;padding-top:16px;border-top:1px solid var(--bd)}
+.bc{padding:10px 26px;background:transparent;border:1px solid var(--bd);border-radius:var(--r);color:var(--tm);font-family:var(--fb);font-size:.9rem;cursor:pointer;transition:all .2s}.bc:hover{border-color:var(--tm);color:var(--tx)}
+.bs{padding:10px 30px;background:var(--ac);border:none;border-radius:var(--r);color:var(--bg);font-family:var(--fd);font-weight:600;font-size:.93rem;cursor:pointer;transition:all .2s}.bs:hover{background:var(--al);box-shadow:0 4px 16px var(--ag)}
+.dgi{text-align:center;padding:24px 0 10px;filter:drop-shadow(0 0 14px rgba(201,162,39,.12));animation:gg 3s ease-in-out infinite}
+@keyframes gg{0%,100%{filter:drop-shadow(0 0 10px rgba(201,162,39,.1))}50%{filter:drop-shadow(0 0 18px rgba(201,162,39,.2))}}
+.dn{font-family:var(--fd);font-size:1.7rem;font-weight:700;text-align:center}
+.de{font-family:var(--fm);font-size:.76rem;color:var(--td);text-align:center;letter-spacing:.08em;margin-bottom:4px}
+.dm{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.dm .mb2{font-family:var(--fm);font-size:.68rem;padding:4px 14px;border-radius:20px;border:1px solid var(--bd);color:var(--tm)}.dm .mb2.c{background:var(--s3)}
+.dd{text-align:center;color:var(--tm);font-size:.88rem;margin-bottom:24px;line-height:1.7}
+.ds{margin-bottom:22px}.dst{font-family:var(--fm);font-size:.66rem;letter-spacing:.15em;text-transform:uppercase;color:var(--ac);margin-bottom:11px;padding-bottom:7px;border-bottom:1px solid var(--bd)}
+.di{list-style:none}.di li{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1714;font-size:.86rem}.di li:last-child{border-bottom:none}
+.di .in2{color:var(--tx)}.di .ia{font-family:var(--fm);font-size:.76rem;color:var(--ac)}
+.dss{list-style:none;counter-reset:step}.dss li{counter-increment:step;position:relative;padding:6px 0 6px 36px;font-size:.86rem;color:var(--tm);line-height:1.6}
+.dss li::before{content:counter(step);position:absolute;left:0;top:6px;width:24px;height:24px;border-radius:50%;border:1px solid var(--ac);color:var(--ac);font-family:var(--fm);font-size:.66rem;display:flex;align-items:center;justify-content:center}
+.dft{text-align:center;font-family:var(--fm);font-size:.76rem;color:var(--td);margin-top:16px;padding-top:14px;border-top:1px solid var(--bd)}
+.cov{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:all .25s}.cov.on{opacity:1;visibility:visible}
+.cbx{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);padding:32px;max-width:400px;width:100%;text-align:center;transform:scale(.95);transition:transform .25s}.cov.on .cbx{transform:scale(1)}
+.cbx .ci3{font-size:2rem;margin-bottom:12px}.cbx h3{font-family:var(--fd);font-size:1.1rem;margin-bottom:8px}.cbx p{color:var(--tm);font-size:.86rem;margin-bottom:22px;white-space:pre-line}
+.cac{display:flex;gap:12px;justify-content:center}
+.cm-list{display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
+.cm-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--r)}.cm-row:hover{border-color:var(--td)}
+.cm-emoji{width:44px;height:36px;text-align:center;font-size:1.1rem;background:var(--sf);border:1px solid var(--bd);border-radius:6px;color:var(--tx);outline:none;transition:border-color .25s,box-shadow .25s}.cm-emoji:focus{border-color:var(--ac);box-shadow:0 0 0 2px var(--ag)}
+.cm-name{flex:1;height:36px;padding:0 10px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-family:var(--fb);font-size:.86rem;outline:none;transition:border-color .25s,box-shadow .25s}.cm-name:focus{border-color:var(--ac);box-shadow:0 0 0 2px var(--ag)}
+.cm-count{font-family:var(--fm);font-size:.64rem;color:var(--td);padding:3px 8px;background:var(--s3);border-radius:8px;white-space:nowrap;min-width:52px;text-align:center}
+.cm-del{width:30px;height:30px;border:1px solid var(--bd);border-radius:6px;background:transparent;color:var(--td);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;transition:all .2s;flex-shrink:0}.cm-del:hover{border-color:var(--dg);color:var(--dg);background:#1a0f0f}
+.btn-add-r{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px;border:1px dashed var(--bd);border-radius:var(--r);background:transparent;color:var(--tm);font-family:var(--fm);font-size:.75rem;cursor:pointer;transition:all .25s}.btn-add-r:hover{border-color:var(--ac);color:var(--ac);border-style:solid}
+.cm-footer{display:flex;gap:12px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--bd)}
+.gl-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--r)}.gl-row:hover{border-color:var(--td)}
+.cbn{background:transparent;border:1px solid var(--bd);border-radius:6px;color:var(--tm);font-family:var(--fm);font-size:.66rem;padding:5px 12px;cursor:pointer;transition:all .2s;white-space:nowrap}.cbn:hover{border-color:var(--ac);color:var(--ac)}.cbn.x{padding:5px 8px;font-size:.8rem}.cbn.x:hover{border-color:var(--dg);color:var(--dg)}
+.gl-pv{width:36px;height:42px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.gl-nm{flex:1;font-size:.88rem;color:var(--tx)}.gl-nm-en{font-family:var(--fm);font-size:.68rem;color:var(--td);margin-left:6px}
+.gl-pv-lg{text-align:center;padding:20px;margin-bottom:16px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);min-height:100px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 8px rgba(201,162,39,.1))}
+.gl-tpl-grid{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.gl-tpl{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px 6px;background:var(--bg);border:1.5px solid var(--bd);border-radius:var(--r);cursor:pointer;transition:all .2s;min-width:60px}.gl-tpl:hover{border-color:var(--ac);background:var(--s2)}
+.gl-tpl span{font-family:var(--fm);font-size:.56rem;color:var(--td)}
+details.gl-adv{margin-bottom:16px}details.gl-adv summary{font-family:var(--fm);font-size:.72rem;color:var(--td);cursor:pointer;padding:8px 0;user-select:none}details.gl-adv summary:hover{color:var(--ac)}details.gl-adv[open] summary{margin-bottom:8px}
+.toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--s2);border:1px solid var(--ac);color:var(--tx);padding:12px 28px;border-radius:var(--r);font-family:var(--fm);font-size:.8rem;z-index:3000;opacity:0;transition:all .35s;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.5);max-width:90vw;text-align:center}.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ===== 智能导入样式 ===== */
+.si-drop{position:relative;padding:20px;border:2px dashed var(--bd);border-radius:var(--r);text-align:center;cursor:pointer;transition:all .3s;margin-bottom:12px}
+.si-drop::before{content:'';position:absolute;inset:0;border-radius:var(--r);background:radial-gradient(circle at 50% 50%,rgba(201,162,39,.04),transparent 70%);opacity:0;transition:opacity .3s;pointer-events:none}
+.si-drop:hover,.si-drop.drag{border-color:var(--ac);background:rgba(201,162,39,.03)}
+.si-drop:hover::before,.si-drop.drag::before{opacity:1}
+.si-drop-icon{font-size:1.5rem;margin-bottom:6px;opacity:.5}
+.si-drop-title{font-family:var(--fd);font-size:.88rem;font-weight:600;margin-bottom:2px}
+.si-drop-desc{font-family:var(--fm);font-size:.64rem;color:var(--td)}
+.si-drop-desc code{color:var(--ac);background:var(--s2);padding:1px 4px;border-radius:3px}
+.si-drop input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.si-or{display:flex;align-items:center;gap:10px;margin:12px 0;font-family:var(--fm);font-size:.64rem;color:var(--td)}
+.si-or::before,.si-or::after{content:'';flex:1;height:1px;background:var(--bd)}
+.si-paste{width:100%;min-height:100px;padding:10px 14px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:var(--fm);font-size:.78rem;outline:none;resize:vertical;line-height:1.7;transition:border-color .25s,box-shadow .25s}
+.si-paste:focus{border-color:var(--ac);box-shadow:0 0 0 3px var(--ag)}
+.si-paste::placeholder{color:var(--td)}
+.si-actions{display:flex;gap:8px;margin-top:10px;justify-content:flex-end}
+.si-btn{padding:8px 20px;border-radius:var(--r);font-family:var(--fd);font-weight:600;font-size:.82rem;cursor:pointer;transition:all .25s;border:none;white-space:nowrap}
+.si-btn.primary{background:var(--ac);color:var(--bg)}.si-btn.primary:hover{background:var(--al);box-shadow:0 3px 14px var(--ag)}
+.si-btn.ghost{background:transparent;border:1px solid var(--bd);color:var(--tm);font-family:var(--fb);font-weight:300}.si-btn.ghost:hover{border-color:var(--tm);color:var(--tx)}
+.si-btn.danger{background:transparent;border:1px solid rgba(179,64,64,.3);color:var(--dg);font-family:var(--fb);font-weight:300}.si-btn.danger:hover{background:rgba(179,64,64,.08)}
+.si-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-family:var(--fm);font-size:.62rem;border:1px solid var(--bd);color:var(--tm)}
+.si-badge.detected{border-color:var(--ac);color:var(--ac);background:rgba(201,162,39,.06)}
+.si-preview-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.si-preview-hdr .left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.si-preview-hdr .right{display:flex;gap:8px}
+.si-recipe{background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:10px;transition:border-color .25s}
+.si-recipe:hover{border-color:rgba(201,162,39,.4)}
+.si-rhead{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;transition:background .2s}
+.si-rhead:hover{background:var(--s2)}
+.si-ridx{width:24px;height:24px;flex-shrink:0;border-radius:50%;border:1px solid var(--ac);color:var(--ac);font-family:var(--fm);font-size:.62rem;display:flex;align-items:center;justify-content:center}
+.si-rinfo{flex:1;min-width:0}
+.si-rname{font-family:var(--fd);font-size:.92rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.si-ren{font-family:var(--fm);font-size:.64rem;color:var(--td)}
+.si-rbadges{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
+.si-rbadge{font-family:var(--fm);font-size:.54rem;padding:2px 7px;border:1px solid var(--bd);border-radius:20px;color:var(--tm)}
+.si-rbadge.cat{color:var(--ac);border-color:rgba(201,162,39,.3);background:rgba(201,162,39,.06)}
+.si-rbadge.ok{color:var(--ok);border-color:rgba(90,154,90,.3);background:rgba(90,154,90,.06)}
+.si-rbadge.warn{color:#bf9f4d;border-color:rgba(191,159,77,.3);background:rgba(191,159,77,.06)}
+.si-toggle{width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:var(--td);font-size:.78rem;transition:transform .25s,color .2s;flex-shrink:0}
+.si-toggle.open{transform:rotate(180deg);color:var(--ac)}
+.si-rbody{display:none;padding:0 14px 14px;border-top:1px solid var(--bd)}
+.si-rbody.show{display:block;animation:fadeUp .25s ease}
+.si-fg{margin-bottom:10px}
+.si-fg label{display:block;font-family:var(--fm);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--td);margin-bottom:3px}
+.si-fg input,.si-fg textarea,.si-fg select{width:100%;padding:7px 10px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-family:var(--fb);font-size:.8rem;outline:none;transition:border-color .2s}
+.si-fg input:focus,.si-fg textarea:focus,.si-fg select:focus{border-color:var(--ac)}
+.si-fg textarea{resize:vertical;min-height:32px;line-height:1.5}
+.si-fr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.si-fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.si-ings,.si-stps{display:flex;flex-direction:column;gap:5px}
+.si-ing-r{display:flex;gap:5px;align-items:center}
+.si-ing-r input:first-child{flex:2}.si-ing-r input:nth-child(2){flex:1}
+.si-stp-r{display:flex;gap:5px;align-items:flex-start}
+.si-stp-n{width:20px;height:20px;flex-shrink:0;border-radius:50%;border:1px solid var(--ac);color:var(--ac);font-family:var(--fm);font-size:.56rem;display:flex;align-items:center;justify-content:center;margin-top:5px}
+.si-stp-r textarea{flex:1;min-height:28px;font-size:.76rem}
+.si-rm{width:22px;height:22px;flex-shrink:0;border:1px solid var(--bd);border-radius:4px;background:transparent;color:var(--td);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.7rem;transition:all .2s;margin-top:3px}
+.si-rm:hover{border-color:var(--dg);color:var(--dg)}
+.si-add{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1px dashed var(--bd);border-radius:6px;background:transparent;color:var(--td);font-family:var(--fm);font-size:.62rem;cursor:pointer;transition:all .2s;margin-top:3px}
+.si-add:hover{border-color:var(--ac);color:var(--ac)}
+.si-rfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid var(--bd)}
+.si-rfoot .si-btn{padding:6px 14px;font-size:.72rem}
+.si-list{max-height:55vh;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:var(--s3) var(--sf)}
+
+@media(max-width:600px){.app{padding:0 16px}header{padding:32px 0 20px}.gr{grid-template-columns:1fr}.fr{grid-template-columns:1fr}.gp{grid-template-columns:repeat(3,1fr)}.mb{padding:16px 18px 22px}.mh{padding:18px 18px 0}.ir input:nth-child(2){width:85px}.cm-row,.gl-row{gap:6px;padding:8px 10px}.cd-foot .acts{opacity:1}.cd-name{height:auto;min-height:34px}.cd-en{height:auto;min-height:18px}.pf-bar{flex-wrap:wrap}.si-fr,.si-fr3{grid-template-columns:1fr}.mdl{max-width:100%}}
+.p-stats{font-family:var(--fm);font-size:.78rem;color:var(--ac);text-align:center;margin-bottom:14px;padding:12px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);line-height:1.8}
+.p-hint{text-align:center;font-family:var(--fm);font-size:.72rem;color:var(--td);margin-bottom:6px;line-height:1.6}
+.p-search{position:relative;margin-bottom:14px}.p-search input{width:100%;padding:10px 14px 10px 36px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:var(--fb);font-size:.88rem;outline:none;transition:border-color .25s,box-shadow .25s}.p-search input:focus{border-color:var(--ac);box-shadow:0 0 0 3px var(--ag)}
+.p-search::before{content:'⌕';position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--td);font-size:1.1rem;pointer-events:none}
+.p-acts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.p-act-btn{padding:6px 14px;background:transparent;border:1px solid var(--bd);border-radius:var(--r);color:var(--tm);font-family:var(--fm);font-size:.72rem;cursor:pointer;transition:all .2s;white-space:nowrap}.p-act-btn:hover{border-color:var(--ac);color:var(--ac)}
+.p-grid{max-height:50vh;overflow-y:auto;padding:0 0 8px;scrollbar-width:thin;scrollbar-color:var(--s3) var(--sf)}
+.p-group{margin-bottom:16px}.p-group-title{font-family:var(--fm);font-size:.72rem;letter-spacing:.12em;color:var(--ac);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:6px}
+.p-group-items{display:flex;flex-wrap:wrap;gap:8px}
+.p-item{display:inline-flex;align-items:center;gap:4px;padding:7px 14px;background:var(--bg);border:1.5px solid var(--bd);border-radius:100px;cursor:pointer;font-family:var(--fb);font-size:.82rem;color:var(--tm);transition:all .2s;white-space:nowrap;user-select:none}.p-item:hover{border-color:var(--td);color:var(--tx)}.p-item.on{border-color:var(--ac);background:rgba(201,162,39,.1);color:var(--ac)}
+.p-item .p-cnt{font-family:var(--fm);font-size:.56rem;background:var(--s3);padding:1px 6px;border-radius:8px;color:var(--td)}.p-item.on .p-cnt{background:rgba(201,162,39,.15);color:var(--ac)}
+.p-item.hidden{display:none}.p-group.hidden{display:none}
+.p-ge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;font-size:.78rem;cursor:pointer;border-radius:4px;transition:all .15s;flex-shrink:0;line-height:1}.p-ge:hover{background:rgba(201,162,39,.2);transform:scale(1.15)}
+.p-del{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;font-size:.6rem;cursor:pointer;border-radius:4px;color:var(--td);transition:all .15s;flex-shrink:0;opacity:0}.p-item:hover .p-del{opacity:1}.p-del:hover{color:var(--dg);background:rgba(179,64,64,.15)}
+.gp-popup{position:fixed;z-index:5000;background:var(--sf);border:1px solid var(--ac);border-radius:var(--r);padding:6px;display:flex;flex-wrap:wrap;gap:4px;max-width:300px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.gp-opt{display:flex;align-items:center;gap:4px;padding:7px 12px;border-radius:6px;cursor:pointer;font-family:var(--fm);font-size:.72rem;color:var(--tm);transition:all .15s;white-space:nowrap;border:1px solid transparent}.gp-opt:hover{background:var(--s2);color:var(--tx);border-color:var(--bd)}.gp-opt.active{background:rgba(201,162,39,.12);color:var(--ac);border-color:var(--ac)}
+.w-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.w-filters select{flex:1;min-width:90px;padding:8px 28px 8px 10px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:var(--fb);font-size:.82rem;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238a8279' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;transition:border-color .25s,box-shadow .25s}.w-filters select:focus{border-color:var(--ac);box-shadow:0 0 0 3px var(--ag)}
+.w-stage{display:flex;flex-direction:column;align-items:center;position:relative;padding-top:28px;margin-bottom:8px}
+.w-ptr{position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:5;width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid var(--ac);filter:drop-shadow(0 3px 8px rgba(201,162,39,.45));transition:transform .3s}.w-ptr.bounce{animation:pBnc .45s ease}
+@keyframes pBnc{0%{transform:translateX(-50%) translateY(0)}30%{transform:translateX(-50%) translateY(-10px)}60%{transform:translateX(-50%) translateY(3px)}100%{transform:translateX(-50%) translateY(0)}}
+.w-cv{display:block;border-radius:50%;box-shadow:0 0 50px rgba(0,0,0,.6),0 0 0 2px rgba(201,162,39,.12);cursor:pointer}
+.w-spin-btn{display:none}
+.w-info{text-align:center;margin-bottom:16px}.w-cnt{font-family:var(--fm);font-size:.72rem;color:var(--td)}
+.w-spin-btn{display:block;margin:0 auto;padding:13px 52px;background:var(--ac);border:none;border-radius:var(--r);color:var(--bg);font-family:var(--fd);font-weight:700;font-size:1.1rem;cursor:pointer;transition:all .25s;letter-spacing:.12em}.w-spin-btn:hover:not(:disabled){background:var(--al);transform:translateY(-1px);box-shadow:0 6px 24px var(--ag)}.w-spin-btn:disabled{opacity:.45;cursor:not-allowed}.w-spin-btn:active:not(:disabled){transform:scale(.97)}
+.w-result{text-align:center;margin-top:22px;opacity:0;transform:translateY(12px);transition:all .5s cubic-bezier(.25,.46,.45,.94)}.w-result.on{opacity:1;transform:translateY(0)}
+.wr-glass{margin-bottom:8px;filter:drop-shadow(0 0 12px rgba(201,162,39,.2))}.wr-name{font-family:var(--fd);font-size:1.5rem;font-weight:700;color:var(--ac);margin-bottom:4px}.wr-en{font-family:var(--fm);font-size:.78rem;color:var(--td);letter-spacing:.06em;margin-bottom:8px}
+.wr-meta{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}.wr-meta .mb2{font-family:var(--fm);font-size:.68rem;padding:4px 14px;border-radius:20px;border:1px solid var(--bd);color:var(--tm)}
+.wr-act{padding:8px 24px;background:transparent;border:1px solid var(--ac);border-radius:var(--r);color:var(--ac);font-family:var(--fb);font-size:.86rem;cursor:pointer;transition:all .2s}.wr-act:hover{background:var(--ac);color:var(--bg)}
+@media(max-width:600px){.w-filters select{min-width:70px;font-size:.76rem;padding:7px 24px 7px 8px}}
+.tg-grid{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}.tg-item{display:inline-flex;align-items:center;padding:6px 14px;background:var(--bg);border:1.5px solid var(--bd);border-radius:100px;cursor:pointer;font-family:var(--fm);font-size:.72rem;color:var(--tm);transition:all .2s;white-space:nowrap;user-select:none}.tg-item:hover{border-color:var(--td);color:var(--tx)}.tg-item.on{border-color:var(--ac);background:rgba(201,162,39,.1);color:var(--ac)}
+.tg-add{display:flex;gap:8px;align-items:center;margin-top:8px}.tg-add input{flex:1;padding:8px 12px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:var(--fb);font-size:.86rem;outline:none;transition:border-color .25s,box-shadow .25s}.tg-add input:focus{border-color:var(--ac);box-shadow:0 0 0 3px var(--ag)}
+header h1 span{cursor:pointer}
+header h1:hover span{filter:brightness(1.2)}
+header.on h1 span{text-shadow:0 0 20px rgba(201,162,39,.35)}
+
+/* ===== 导入策略选择 ===== */
+.si-dup-count{display:flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(191,159,77,.06);border:1px solid rgba(191,159,77,.2);border-radius:var(--r);margin-bottom:12px;font-family:var(--fm);font-size:.74rem;color:#bf9f4d}
+.si-strategy{padding:16px;margin-bottom:16px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--r)}
+.si-strategy-title{font-family:var(--fm);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--tm);margin-bottom:10px}
+.si-strat-opts{display:flex;flex-direction:column;gap:8px}
+.si-strat-opt{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1.5px solid var(--bd);border-radius:var(--r);cursor:pointer;transition:all .2s;user-select:none}
+.si-strat-opt:hover{border-color:var(--td);background:var(--s2)}
+.si-strat-opt.active{border-color:var(--ac);background:rgba(201,162,39,.05)}
+.si-strat-radio{width:16px;height:16px;flex-shrink:0;border:2px solid var(--bd);border-radius:50%;margin-top:2px;transition:all .2s;position:relative}
+.si-strat-opt.active .si-strat-radio{border-color:var(--ac)}
+.si-strat-opt.active .si-strat-radio::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:8px;height:8px;border-radius:50%;background:var(--ac)}
+.si-strat-label{font-family:var(--fd);font-size:.88rem;font-weight:600;color:var(--tx);line-height:1.4}
+.si-strat-desc{font-family:var(--fm);font-size:.68rem;color:var(--td);line-height:1.5;margin-top:2px}
+.si-dup{border-color:rgba(191,159,77,.35)!important;background:rgba(191,159,77,.02)!important}
+.si-batch-dup{border-color:rgba(179,64,64,.35)!important;background:rgba(179,64,64,.02)!important}
+.si-rbadge.dup{color:#bf9f4d;border-color:rgba(191,159,77,.4);background:rgba(191,159,77,.1)}
+.si-rbadge.batch-dup{color:var(--dg);border-color:rgba(179,64,64,.4);background:rgba(179,64,64,.1)}
+
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+<div class="logo-g"><svg viewBox="0 0 40 50" width="44" height="55" fill="none"><path d="M2,4 L20,26 L38,4Z" stroke="rgba(201,162,39,.55)" stroke-width="1.6" stroke-linejoin="round" fill="rgba(201,162,39,.04)"/><line x1="2" y1="4" x2="38" y2="4" stroke="rgba(201,162,39,.6)" stroke-width="1.8" stroke-linecap="round"/><line x1="20" y1="26" x2="20" y2="36" stroke="rgba(201,162,39,.4)" stroke-width="1.4"/><ellipse cx="20" cy="40" rx="10" ry="3.5" stroke="rgba(201,162,39,.3)" stroke-width="1.2" fill="rgba(201,162,39,.04)"/><circle cx="20" cy="14" r="2.5" stroke="rgba(201,162,39,.35)" stroke-width="1" fill="rgba(201,162,39,.06)"/></svg></div>
+<h1><span>Alchemist</span></h1><div class="sub-wrap">
+  <div class="sub" id="subTrig">鸡尾酒配方管理 · 调酒师的数字工具</div>
+  <div class="dd-menu dd-sub" id="mgrMenu">
+    <div class="dd-item" id="bMC"><svg viewBox="0 0 24 24"><path d="M8 2v6l-2 4v2a6 6 0 0 0 12 0v-2l-2-4V2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="2" x2="16" y2="2"/></svg>管理分类</div>
+    <div class="dd-item" id="bMG"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>管理杯型</div>
+    <div class="dd-sep"></div>
+    <div class="dd-item" id="bExp"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>导出配方</div>
+    <div class="dd-item" id="bImp"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>导入配方</div>
+  </div>
+</div>
+</header>
+<div class="tbar">
+<div class="sb"><input id="q" placeholder="搜索配方名称、材料、标签..." /></div>
+<button class="btn-m" id="bW" type="button"><svg viewBox="0 0 24 24"><path d="M21.5 2v6h-6"/><path d="M21.34 15.57a10 10 0 1 1-.57-8.38"/></svg>随机转盘</button>
+</div>
+<div class="cts" id="tabs"></div>
+<div class="pf-bar" id="pfBar">
+  <span class="pf-icon">🧊</span>
+  <span class="pf-text">材料柜 · 可调 <strong id="pfNum"></strong> / <strong id="pfTotal"></strong> 款</span>
+  <button class="pf-edit" id="pfEdit">修改材料</button>
+  <button class="pf-reset" id="pfReset">清除全部</button>
+</div>
+<div class="gr" id="grid"></div>
+</div>
+
+<div class="ov" id="eO"><div class="mdl"><div class="mh"><h2 id="eT">添加鸡尾酒</h2><button class="mc" id="eC" type="button">&times;</button></div><div class="mb">
+<form id="frm"><input type="hidden" id="fId"/><input type="hidden" id="fG"/>
+<div class="fr"><div class="fg"><label>中文名称</label><input id="fNm" required placeholder="如：莫吉托"/></div><div class="fg"><label>英文名称</label><input id="fNe" placeholder="Mojito"/></div></div>
+<div class="fg"><label>选择杯型</label><div class="gp" id="gp"></div></div>
+<div class="fr"><div class="fg"><label>分类</label><select id="fCt"></select><input id="fCc" style="display:none;margin-top:6px" placeholder="输入自定义分类"/></div><div class="fg"><label>酒精烈度</label><select id="fSt"><option value="light">轻度 Light</option><option value="medium">中度 Medium</option><option value="strong">强烈 Strong</option></select></div></div>
+<div class="fg"><label>基酒</label><input id="fBs" placeholder="如：白朗姆酒"/></div>
+<div class="fg"><label>简介</label><textarea id="fDc" rows="2"></textarea></div>
+<div class="fg"><label>配料清单</label><div class="il" id="il"></div><button type="button" class="ar" id="aI">+ 添加配料</button></div>
+<div class="fg"><label>制作步骤</label><div class="sl2" id="sl"></div><button type="button" class="ar" id="aS">+ 添加步骤</button></div>
+<div class="fg"><label>标签</label><div class="tg-grid" id="tgGrid"></div><div class="tg-add"><input id="fTgNew" placeholder="新标签"/><button type="button" class="ar" id="aTg">+ 添加</button></div></div>
+<div class="fa"><button type="button" class="bc" id="bCn">取消</button><button type="submit" class="bs">保存配方</button></div>
+</form></div></div></div>
+
+<div class="ov" id="dO"><div class="mdl"><div class="mh"><h2>配方详情</h2><button class="mc" id="dC" type="button">&times;</button></div><div class="mb" id="dB"></div></div></div>
+<div class="ov" id="mO"><div class="mdl"><div class="mh"><h2>管理分类</h2><button class="mc" id="mC" type="button">&times;</button></div><div class="mb"><div class="cm-list" id="cmL"></div><button type="button" class="btn-add-r" id="cmAdd">+ 添加新分类</button><div class="cm-footer"><button type="button" class="bc" id="cmNo">取消</button><button type="button" class="bs" id="cmOk">保存分类</button></div></div></div></div>
+<div class="ov" id="gO"><div class="mdl"><div class="mh"><h2 id="gTitle">管理杯型</h2><button class="mc" id="gC" type="button">&times;</button></div><div class="mb" id="gBody"></div></div></div>
+<div class="ov" id="pO"><div class="mdl"><div class="mh"><h2>材料柜</h2><button class="mc" id="pC" type="button">&times;</button></div><div class="mb">
+<div class="p-stats" id="pStats"></div>
+<div class="p-hint">勾选你有的材料 · 点击 emoji 可修改分组</div>
+<div class="p-search"><input id="pQ" placeholder="搜索材料..." /></div>
+<div class="p-acts"><button class="p-act-btn" id="pAll">全选</button><button class="p-act-btn" id="pNone">清空</button><button class="p-act-btn" id="pInv">反选</button><button class="p-act-btn" id="pMgr">管理分类</button></div>
+<div class="p-grid" id="pGrid"></div>
+<div class="cm-footer"><button type="button" class="bc" id="pDone">完成</button></div>
+</div></div></div>
+<div class="ov" id="igO"><div class="mdl"><div class="mh"><h2>管理材料分类</h2><button class="mc" id="igC" type="button">&times;</button></div><div class="mb"><div class="cm-list" id="igL"></div><button type="button" class="btn-add-r" id="igAdd">+ 新增分类</button><div class="cm-footer"><button type="button" class="bc" id="igNo">取消</button><button type="button" class="bs" id="igOk">保存</button></div></div></div></div>
+
+<!-- ===== 智能导入弹窗 ===== -->
+<div class="ov" id="siO"><div class="mdl"><div class="mh"><h2>智能导入配方</h2><button class="mc" id="siC" type="button">&times;</button></div><div class="mb">
+<div id="siInputArea">
+  <div class="si-drop" id="siDrop">
+    <div class="si-drop-icon">📂</div>
+    <div class="si-drop-title">拖放文件到此处</div>
+    <div class="si-drop-desc">自动识别 <code>.json</code> <code>.csv</code> <code>.txt</code></div>
+    <input type="file" id="siFile" accept=".json,.csv,.txt,.text" multiple/>
+  </div>
+  <div class="si-or">或直接粘贴配方文本</div>
+  <textarea class="si-paste" id="siPaste" placeholder="粘贴任意格式的配方文本...&#10;网页复制、聊天记录、笔记、表格等均可自动识别"></textarea>
+  <div class="si-actions">
+    <button class="si-btn ghost" onclick="siClearPaste()">清空</button>
+    <button class="si-btn primary" onclick="siParsePaste()">智能识别</button>
+  </div>
+</div>
+<div id="siPreview" style="display:none">
+  <div class="si-preview-hdr">
+    <div class="left"><span style="font-family:var(--fd);font-size:.95rem;font-weight:700">识别结果</span><span id="siFmtBadge"></span><span class="si-badge" id="siCount"></span></div>
+    <div class="right"><button class="si-btn danger" onclick="siClearAll()">清空</button><button class="si-btn primary" onclick="siConfirmImport()">确认导入</button></div>
+  </div>
+  <div class="si-list" id="siList"></div>
+</div>
+</div></div></div>
+
+<div class="cov" id="cfOv"><div class="cbx"><div class="ci3">&times;</div><h3 id="cfTi">确认</h3><p id="cfTx"></p><div class="cac" id="cfAc"></div></div></div>
+<div class="ov" id="wO"><div class="mdl"><div class="mh"><h2>随机转盘</h2><button class="mc" id="wCC" type="button">&times;</button></div><div class="mb">
+<div class="w-filters"><select id="wfCat"></select><select id="wfBase"></select><select id="wfStr"></select><select id="wfIng"></select><select id="wfTag"></select></div>
+<div class="w-stage"><div class="w-ptr" id="wPtr"></div><canvas id="wCv" class="w-cv" width="340" height="340"></canvas></div>
+<div class="w-info"><span class="w-cnt" id="wCnt"></span></div>
+<div class="w-result" id="wRes"></div>
+</div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+var GC={sk:'rgba(201,162,39,.5)',fk:'rgba(201,162,39,.03)',lk:'rgba(201,162,39,.07)',hk:'rgba(255,255,255,.05)',bk:'rgba(201,162,39,.35)',bf:'rgba(201,162,39,.04)',rk:'rgba(255,255,255,.08)',dk:'rgba(201,162,39,.15)',df:'rgba(201,162,39,.04)'};
+function mkG(p){return p.replace(/\{f\}/g,GC.fk).replace(/\{s\}/g,GC.sk).replace(/\{l\}/g,GC.lk).replace(/\{h\}/g,GC.hk).replace(/\{b\}/g,GC.bf).replace(/\{bs\}/g,GC.bk).replace(/\{r\}/g,GC.rk).replace(/\{d\}/g,GC.dk).replace(/\{df\}/g,GC.df)}
+var DEF_GLASSES={'old-fashioned':{n:'古典杯',e:'Rocks',vb:'0 0 50 52',s:mkG('<path d="M13,6 L11,34 Q11,38 25,38 Q39,38 39,34 L37,6Z" fill="{f}" stroke="{s}" stroke-width="1.4"/><path d="M9,38 Q9,46 25,46 Q41,46 41,38" fill="{b}" stroke="{bs}" stroke-width="1.2"/><path d="M14,22 L12,34 Q12,37 25,37 Q38,37 38,34 L36,22Z" fill="{l}"/><line x1="13" y1="6" x2="37" y2="6" stroke="{r}" stroke-width="1.5"/><rect x="18" y="24" width="8" height="6" rx="1.2" fill="{df}" stroke="{d}" stroke-width=".6" transform="rotate(-7,22,27)"/><rect x="27" y="23" width="7" height="7" rx="1.2" fill="{df}" stroke="{d}" stroke-width=".6" transform="rotate(5,30,26)"/>')},'highball':{n:'高球杯',e:'Highball',vb:'0 0 30 56',s:mkG('<path d="M9,4 L7.5,46 Q7.5,50 15,50 Q22.5,50 22.5,46 L21,4Z" fill="{f}" stroke="{s}" stroke-width="1.4"/><path d="M9.5,30 L8,46 Q8,49 15,49 Q22,49 22,46 L20.5,30Z" fill="{l}"/><line x1="9" y1="4" x2="21" y2="4" stroke="{r}" stroke-width="1.5"/>')},'collins':{n:'柯林杯',e:'Collins',vb:'0 0 26 58',s:mkG('<path d="M6,3 L8,47 Q8,49 13,49 Q18,49 18,47 L20,3Z" fill="{f}" stroke="{s}" stroke-width="1.4"/><path d="M8,28 L9.5,47 Q10,48 13,48 Q16,48 16.5,47 L18,28Z" fill="{l}"/><line x1="6" y1="3" x2="20" y2="3" stroke="{r}" stroke-width="1.5"/>')},'coupe':{n:'鸡尾酒杯',e:'Coupe',vb:'0 0 52 50',s:mkG('<path d="M3,10 C3,24 14,28 26,28 C38,28 49,24 49,10Z" fill="{f}" stroke="{s}" stroke-width="1.4"/><path d="M7,12 C7,22 15,26 26,26 C37,26 45,22 45,12Z" fill="{l}"/><line x1="26" y1="28" x2="26" y2="38" stroke="{bs}" stroke-width="1.3"/><ellipse cx="26" cy="42" rx="10" ry="3.5" fill="{b}" stroke="{bs}" stroke-width="1"/>')},'martini':{n:'马天尼杯',e:'Martini',vb:'0 0 46 52',s:mkG('<path d="M3,6 L23,27 L43,6Z" fill="{f}" stroke="{s}" stroke-width="1.4" stroke-linejoin="round"/><path d="M9,8 L23,24 L37,8Z" fill="{l}"/><line x1="3" y1="6" x2="43" y2="6" stroke="{r}" stroke-width="1.6" stroke-linecap="round"/><line x1="23" y1="27" x2="23" y2="38" stroke="{bs}" stroke-width="1.3"/><ellipse cx="23" cy="42" rx="9" ry="3" fill="{b}" stroke="{bs}" stroke-width="1"/><circle cx="23" cy="15" r="2" fill="{df}" stroke="{d}" stroke-width=".6"/>')},'hurricane':{n:'飓风杯',e:'Hurricane',vb:'0 0 40 56',s:mkG('<path d="M12,3 L10,10 Q2,22 2,30 Q2,40 15,42 L25,42 Q38,40 38,30 Q38,22 30,10 L28,3Z" fill="{f}" stroke="{s}" stroke-width="1.4"/><path d="M13,14 Q6,22 6,30 Q6,38 15,40 L25,40 Q34,38 34,30 Q34,22 27,14Z" fill="{l}"/><rect x="14" y="42" width="12" height="3" rx="1.5" fill="{b}" stroke="{bs}"/><rect x="10" y="45" width="20" height="4" rx="2" fill="{b}" stroke="{bs}"/>')},'margarita':{n:'玛格丽特杯',e:'Margarita',vb:'0 0 54 48',s:mkG('<path d="M2,5 L27,26 L52,5Z" fill="{f}" stroke="{s}" stroke-width="1.4" stroke-linejoin="round"/><path d="M8,8 L27,23 L46,8Z" fill="{l}"/><line x1="27" y1="26" x2="27" y2="36" stroke="{bs}" stroke-width="1.2"/><ellipse cx="27" cy="40" rx="10" ry="3.5" fill="{b}" stroke="{bs}" stroke-width="1"/>')},'glencairn':{n:'格兰凯恩',e:'Glencairn',vb:'0 0 34 48',s:mkG('<path d="M12,4 C6,4 3,10 3,18 C3,27 9,33 17,35 C25,33 31,27 31,18 C31,10 28,4 22,4Z" fill="{f}" stroke="{s}" stroke-width="1.4"/><path d="M14,12 C9,12 7,16 7,20 C7,27 11,31 17,33 C23,31 27,27 27,20 C27,16 25,12 20,12Z" fill="{l}"/><rect x="14" y="35" width="6" height="4" rx="1" fill="{b}" stroke="{bs}"/><ellipse cx="17" cy="43" rx="9" ry="3.5" fill="{b}" stroke="{bs}" stroke-width="1"/>')},'nick-nora':{n:'尼克诺拉杯',e:'Nick&Nora',vb:'0 0 34 48',s:mkG('<path d="M10,6 C6,6 4,10 4,16 C4,23 10,27 17,29 C24,27 30,23 30,16 C30,10 28,6 24,6Z" fill="{f}" stroke="{s}" stroke-width="1.4"/><path d="M12,10 C9,10 7,13 7,17 C7,22 11,25 17,27 C23,25 27,22 27,17 C27,13 25,10 22,10Z" fill="{l}"/><line x1="17" y1="29" x2="17" y2="37" stroke="{bs}" stroke-width="1.2"/><ellipse cx="17" cy="41" rx="8" ry="3" fill="{b}" stroke="{bs}" stroke-width="1"/>')},'wine':{n:'红酒杯',e:'Wine',vb:'0 0 38 56',s:mkG('<path d="M10,10 C4,10 2,16 2,24 C2,32 8,36 19,38 C30,36 36,32 36,24 C36,16 34,10 28,10Z" fill="{f}" stroke="{s}" stroke-width="1.4"/><path d="M12,14 C7,14 5,18 5,24 C5,30 9,34 19,36 C29,34 33,30 33,24 C33,18 31,14 26,14Z" fill="{l}"/><line x1="19" y1="38" x2="19" y2="46" stroke="{bs}" stroke-width="1.2"/><ellipse cx="19" cy="50" rx="10" ry="3.5" fill="{b}" stroke="{bs}" stroke-width="1"/>')},'shot':{n:'烈酒杯',e:'Shot',vb:'0 0 50 26',s:mkG('<path d="M3,3 L3,17 Q3,21 9,21 Q15,21 15,17 L15,3Z" fill="{f}" stroke="{s}" stroke-width="1.1"/><path d="M4.5,6 L4.5,17 Q4.5,20 9,20 Q13.5,20 13.5,17 L13.5,6Z" fill="{l}"/><line x1="3" y1="3" x2="15" y2="3" stroke="{r}" stroke-width="1.3"/><path d="M19,3 L19,17 Q19,21 25,21 Q31,21 31,17 L31,3Z" fill="{f}" stroke="{s}" stroke-width="1.1"/><path d="M20.5,6 L20.5,17 Q20.5,20 25,20 Q29.5,20 29.5,17 L29.5,6Z" fill="{l}"/><line x1="19" y1="3" x2="31" y2="3" stroke="{r}" stroke-width="1.3"/><path d="M35,3 L35,17 Q35,21 41,21 Q47,21 47,17 L47,3Z" fill="{f}" stroke="{s}" stroke-width="1.1"/><path d="M36.5,6 L36.5,17 Q36.5,20 41,20 Q45.5,20 45.5,17 L45.5,6Z" fill="{l}"/><line x1="35" y1="3" x2="47" y2="3" stroke="{r}" stroke-width="1.3"/>')},'pilsner':{n:'皮尔森杯',e:'Pilsner',vb:'0 0 30 56',s:mkG('<path d="M9,4 L7,40 Q7,44 15,44 Q23,44 23,40 L21,4Z" fill="{f}" stroke="{s}" stroke-width="1.4"/><path d="M10,28 L8,40 Q8,43 15,43 Q22,43 22,40 L20,28Z" fill="{l}"/><line x1="9" y1="4" x2="21" y2="4" stroke="{r}" stroke-width="1.5"/><rect x="11" y="44" width="8" height="4" rx="2" fill="{b}" stroke="{bs}" stroke-width="1"/>')},'copper-mug':{n:'铜杯',e:'Copper Mug',vb:'0 0 48 40',s:mkG('<path d="M8,2 L6,28 Q6,34 22,34 Q36,34 38,28 L36,2Z" fill="{f}" stroke="{s}" stroke-width="1.4"/><path d="M9.5,8 L7.5,28 Q7.5,33 22,33 Q34.5,33 36.5,28 L34.5,8Z" fill="{l}"/><line x1="8" y1="2" x2="36" y2="2" stroke="{r}" stroke-width="1.5"/><path d="M36,10 Q44,10 44,19 Q44,28 36,28" fill="none" stroke="{s}" stroke-width="1.6" stroke-linecap="round"/>')},'zombie':{n:'僵尸杯',e:'Zombie',vb:'0 0 36 62',s:mkG('<path d="M6,3 C3,8 2,16 2,24 C2,34 4,42 8,48 L10,54 Q10,58 18,58 Q26,58 26,54 L28,48 C32,42 34,34 34,24 C34,16 33,8 30,3Z" fill="{f}" stroke="{s}" stroke-width="1.3"/><path d="M10,14 C8,20 7,28 7,34 C7,42 9,46 10,54 Q10,57 18,57 Q26,57 26,54 C27,46 29,42 29,34 C29,28 28,20 26,14Z" fill="{l}"/><line x1="6" y1="3" x2="30" y2="3" stroke="{r}" stroke-width="1.4"/><circle cx="13" cy="24" r="1.8" fill="{df}" stroke="{d}" stroke-width=".6"/><circle cx="23" cy="24" r="1.8" fill="{df}" stroke="{d}" stroke-width=".6"/><path d="M14,31 Q18,35 22,31" fill="none" stroke="{d}" stroke-width=".8"/>')}};
+var GLASS_TPLS=[{n:'平底杯',e:'Tumbler',vb:'0 0 36 46',s:mkG('<path d="M8,4 L8,34 Q8,38 18,38 Q28,38 28,34 L28,4Z" fill="{f}" stroke="{s}" stroke-width="1.4"/><path d="M9,24 L9,34 Q9,37 18,37 Q27,37 27,34 L27,24Z" fill="{l}"/><line x1="8" y1="4" x2="28" y2="4" stroke="{r}" stroke-width="1.5"/>')},{n:'笛形杯',e:'Flute',vb:'0 0 24 56',s:mkG('<path d="M9,4 L8,42 Q8,46 12,46 Q16,46 16,42 L15,4Z" fill="{f}" stroke="{s}" stroke-width="1.4"/><path d="M9.5,28 L9,42 Q9,45 12,45 Q15,45 15,42 L14.5,28Z" fill="{l}"/><line x1="9" y1="4" x2="15" y2="4" stroke="{r}" stroke-width="1.5"/>')},{n:'白兰地杯',e:'Snifter',vb:'0 0 36 44',s:mkG('<path d="M6,4 C3,10 3,18 3,22 C3,32 10,36 18,36 C26,36 33,32 33,22 C33,18 33,10 30,4Z" fill="{f}" stroke="{s}" stroke-width="1.4"/><path d="M8,10 C6,14 6,20 6,24 C6,30 11,34 18,34 C25,34 30,30 30,24 C30,20 30,14 28,10Z" fill="{l}"/><rect x="15" y="36" width="6" height="3" rx="1" fill="{b}" stroke="{bs}"/><ellipse cx="18" cy="42" rx="8" ry="3" fill="{b}" stroke="{bs}"/>')},{n:'啤酒杯',e:'Mug',vb:'0 0 42 44',s:mkG('<path d="M8,4 L8,34 Q8,38 18,38 Q28,38 28,34 L28,4Z" fill="{f}" stroke="{s}" stroke-width="1.4"/><path d="M28,12 Q36,12 36,20 Q36,28 28,28" fill="none" stroke="{s}" stroke-width="1.4"/><path d="M9,22 L9,34 Q9,37 18,37 Q27,37 27,34 L27,22Z" fill="{l}"/>')}];
+var DEF_CATS=[{key:'classic',name:'经典',emoji:'🏛️'},{key:'sour',name:'酸酒',emoji:'🍋'},{key:'highball',name:'嗨棒',emoji:'🥃'},{key:'martini',name:'马天尼',emoji:'🍸'},{key:'manhattan',name:'曼哈顿',emoji:'🏙️'},{key:'fizz',name:'菲士',emoji:'🫧'},{key:'sling',name:'司令',emoji:'🌿'},{key:'flip',name:'菲士帕',emoji:'🥚'},{key:'toddy',name:'托蒂',emoji:'☕'},{key:'punch',name:'潘趣',emoji:'🥣'},{key:'tiki',name:'提基',emoji:'🗿'}];
+var SL={light:'轻度',medium:'中度',strong:'强烈'};
+var DEF_CK=[{id:'c1',name:'莫吉托',nameEn:'Mojito',g:'highball',cat:'sling',str:'light',desc:'古巴经典，白朗姆酒搭配薄荷与青柠，清爽提神。',base:'白朗姆酒',ing:[{n:'白朗姆酒',a:'60ml'},{n:'青柠汁',a:'30ml'},{n:'糖浆',a:'20ml'},{n:'苏打水',a:'适量'},{n:'新鲜薄荷叶',a:'8-10片'},{n:'碎冰',a:'适量'}],stp:['杯中放入薄荷叶和糖浆轻轻捣压','加入青柠汁和白朗姆酒','装满碎冰倒入苏打水','薄荷枝装饰'],tags:['经典','热带','夏日']},{id:'c2',name:'古典鸡尾酒',nameEn:'Old Fashioned',g:'old-fashioned',cat:'classic',str:'strong',desc:'最早的鸡尾酒之一，威士忌搭配苦精与方糖。',base:'波本威士忌',ing:[{n:'波本威士忌',a:'60ml'},{n:'安格斯特拉苦精',a:'2 dash'},{n:'方糖',a:'1块'},{n:'苏打水',a:'少许'},{n:'橙皮',a:'1片'},{n:'樱桃',a:'1颗'}],stp:['方糖放古典杯中滴入苦精和少许苏打水捣碎','加大冰块倒入威士忌','搅拌约20秒','橙皮和樱桃装饰'],tags:['经典','醇厚','威士忌']},{id:'c3',name:'玛格丽特',nameEn:'Margarita',g:'margarita',cat:'sour',str:'medium',desc:'墨西哥国饮，龙舌兰搭配君度与青柠。',base:'龙舌兰酒',ing:[{n:'龙舌兰酒',a:'50ml'},{n:'君度',a:'25ml'},{n:'青柠汁',a:'25ml'},{n:'盐',a:'杯口用'},{n:'冰块',a:'适量'}],stp:['杯口润湿后抹盐边','摇酒壶加所有材料和冰摇15秒','过滤倒入杯中'],tags:['龙舌兰','酸甜','派对']},{id:'c4',name:'尼格罗尼',nameEn:'Negroni',g:'old-fashioned',cat:'classic',str:'strong',desc:'意大利经典，金酒、金巴利与甜味美思等比例调制。',base:'金酒',ing:[{n:'金酒',a:'30ml'},{n:'金巴利',a:'30ml'},{n:'甜味美思',a:'30ml'},{n:'橙皮',a:'1片'}],stp:['古典杯加大冰块','依次倒入三种材料','搅拌20秒橙皮挤油后放入'],tags:['苦味','开胃','意式']},{id:'c5',name:'威士忌酸',nameEn:'Whiskey Sour',g:'coupe',cat:'sour',str:'medium',desc:'经典酸酒，波本搭配柠檬与糖浆。',base:'波本威士忌',ing:[{n:'波本威士忌',a:'60ml'},{n:'柠檬汁',a:'30ml'},{n:'糖浆',a:'15ml'},{n:'蛋清',a:'1个'},{n:'冰块',a:'适量'}],stp:['所有材料先干摇15秒乳化蛋清','加冰再摇15秒','双重过滤倒入杯中'],tags:['酸甜','经典']},{id:'c6',name:'长岛冰茶',nameEn:'Long Island Iced Tea',g:'highball',cat:'highball',str:'strong',desc:'多种烈酒混合，看似冰茶实则极烈。',base:'多种烈酒',ing:[{n:'伏特加',a:'15ml'},{n:'金酒',a:'15ml'},{n:'白朗姆酒',a:'15ml'},{n:'龙舌兰酒',a:'15ml'},{n:'君度',a:'15ml'},{n:'柠檬汁',a:'25ml'},{n:'糖浆',a:'15ml'},{n:'可乐',a:'适量'}],stp:['除可乐外所有材料加冰摇10秒','过滤倒入装满冰的高球杯','顶部加少许可乐'],tags:['派对','烈性']},{id:'c7',name:'金汤力',nameEn:'Gin & Tonic',g:'collins',cat:'highball',str:'light',desc:'最简约优雅的高球鸡尾酒。',base:'金酒',ing:[{n:'金酒',a:'45ml'},{n:'汤力水',a:'150ml'},{n:'青柠角',a:'1个'},{n:'冰块',a:'适量'}],stp:['柯林杯装满冰块','倒入金酒','缓慢倒入汤力水','青柠角装饰'],tags:['清爽','经典']},{id:'c8',name:'迈泰',nameEn:'Mai Tai',g:'hurricane',cat:'tiki',str:'strong',desc:'提基标志性鸡尾酒，陈年朗姆搭配热带风味。',base:'陈年朗姆酒',ing:[{n:'陈年朗姆酒',a:'30ml'},{n:'白朗姆酒',a:'15ml'},{n:'橙皮酒',a:'15ml'},{n:'杏仁糖浆',a:'20ml'},{n:'青柠汁',a:'15ml'},{n:'冰块',a:'适量'}],stp:['所有材料加冰摇12秒','倒入装满碎冰的飓风杯','薄荷枝装饰'],tags:['热带','提基']},{id:'c9',name:'金菲士',nameEn:'Gin Fizz',g:'collins',cat:'fizz',str:'light',desc:'经典菲士，金酒加柠檬与苏打水。',base:'金酒',ing:[{n:'金酒',a:'45ml'},{n:'柠檬汁',a:'30ml'},{n:'糖浆',a:'15ml'},{n:'苏打水',a:'适量'}],stp:['金酒柠檬汁糖浆加冰摇15秒','双重过滤倒入杯中','注入苏打水'],tags:['清爽','气泡']},{id:'c10',name:'赛德卡',nameEn:'Sidecar',g:'coupe',cat:'sour',str:'medium',desc:'干邑白兰地经典酸酒。',base:'干邑白兰地',ing:[{n:'干邑白兰地',a:'45ml'},{n:'君度',a:'15ml'},{n:'柠檬汁',a:'20ml'},{n:'糖',a:'杯口用'}],stp:['杯口润湿后抹糖边','所有材料加冰摇12秒','双重过滤倒入杯中'],tags:['经典','白兰地']},{id:'c11',name:'曼哈顿',nameEn:'Manhattan',g:'nick-nora',cat:'manhattan',str:'strong',desc:'纽约代表性鸡尾酒。',base:'裸麦威士忌',ing:[{n:'裸麦威士忌',a:'60ml'},{n:'甜味美思',a:'30ml'},{n:'安格斯特拉苦精',a:'2 dash'},{n:'樱桃',a:'1颗'}],stp:['所有材料加冰搅拌30秒','双重过滤倒入冰镇杯中','樱桃装饰'],tags:['经典','醇厚','威士忌']},{id:'c12',name:'椰林飘香',nameEn:'Pina Colada',g:'hurricane',cat:'tiki',str:'light',desc:'波多黎各国饮，白朗姆搭配椰浆与菠萝。',base:'白朗姆酒',ing:[{n:'白朗姆酒',a:'60ml'},{n:'椰浆',a:'30ml'},{n:'菠萝汁',a:'90ml'},{n:'冰块',a:'适量'}],stp:['所有材料加大量冰搅拌至顺滑','倒入飓风杯','菠萝角装饰'],tags:['热带','甜品']},{id:'c13',name:'干马天尼',nameEn:'Dry Martini',g:'martini',cat:'martini',str:'strong',desc:'007的标志，鸡尾酒之王。',base:'金酒',ing:[{n:'金酒',a:'60ml'},{n:'干味美思',a:'10ml'},{n:'橄榄',a:'1颗'}],stp:['金酒和干味美思加冰搅拌','双重过滤倒入冰镇马天尼杯','橄榄装饰'],tags:['经典','优雅']},{id:'c14',name:'威士忌嗨棒',nameEn:'Whiskey Highball',g:'highball',cat:'highball',str:'light',desc:'日本居酒屋最受欢迎的饮品。',base:'日本威士忌',ing:[{n:'日本威士忌',a:'45ml'},{n:'苏打水',a:'120ml'},{n:'冰块',a:'适量'},{n:'柠檬片',a:'1片'}],stp:['高球杯装满冰块','倒入威士忌','沿杯壁注入苏打水','柠檬片装饰'],tags:['清爽','日式']},{id:'c15',name:'白俄罗斯',nameEn:'White Russian',g:'old-fashioned',cat:'classic',str:'medium',desc:'伏特加搭配咖啡利口酒与鲜奶油。',base:'伏特加',ing:[{n:'伏特加',a:'30ml'},{n:'咖啡利口酒',a:'30ml'},{n:'鲜奶油',a:'30ml'},{n:'冰块',a:'适量'}],stp:['古典杯加冰','倒入伏特加和咖啡利口酒','缓缓倒入鲜奶油浮在表面'],tags:['甜品','咖啡']},{id:'c16',name:'薄荷茱莉普',nameEn:'Mint Julep',g:'pilsner',cat:'sling',str:'strong',desc:'美国南方经典，肯塔基德比大赛传统饮品。',base:'波本威士忌',ing:[{n:'波本威士忌',a:'60ml'},{n:'糖浆',a:'15ml'},{n:'新鲜薄荷叶',a:'8片'},{n:'碎冰',a:'适量'}],stp:['薄荷叶和糖浆轻轻捣压','加少许碎冰搅拌','倒入威士忌碎冰加满','薄荷枝装饰'],tags:['经典','夏日']},{id:'c17',name:'僵尸',nameEn:'Zombie',g:'zombie',cat:'tiki',str:'strong',desc:'提基传奇，多种朗姆与热带果汁，极烈。',base:'多种朗姆酒',ing:[{n:'白朗姆酒',a:'45ml'},{n:'陈年朗姆酒',a:'30ml'},{n:'高度朗姆酒',a:'15ml'},{n:'青柠汁',a:'20ml'},{n:'西柚汁',a:'15ml'},{n:'法勒诺姆糖浆',a:'15ml'},{n:'红石榴糖浆',a:'1茶匙'}],stp:['所有材料加冰摇12秒','倒入装满碎冰的僵尸杯','薄荷枝装饰'],tags:['提基','烈性']},{id:'c18',name:'热托迪',nameEn:'Hot Toddy',g:'copper-mug',cat:'toddy',str:'medium',desc:'经典热饮，威士忌加蜂蜜与热水。',base:'威士忌',ing:[{n:'威士忌',a:'45ml'},{n:'蜂蜜',a:'15ml'},{n:'柠檬汁',a:'15ml'},{n:'热水',a:'120ml'},{n:'肉桂棒',a:'1根'},{n:'柠檬片',a:'1片'}],stp:['蜂蜜和柠檬汁搅拌溶解','倒入威士忌','注入热水搅拌','肉桂棒装饰'],tags:['热饮','冬日']}];
+
+var ING_ALIAS={'柠檬汁':'柠檬','柠檬片':'柠檬','柠檬角':'柠檬','青柠汁':'青柠','青柠角':'青柠','碎冰':'冰','冰块':'冰','橙皮':'橙子','橙汁':'橙子','菠萝汁':'菠萝','菠萝角':'菠萝','西柚汁':'西柚','新鲜薄荷叶':'薄荷','薄荷叶':'薄荷','安格斯特拉苦精':'苦精','方糖':'糖'};
+function canonical(n){return ING_ALIAS[n]||n}
+var ING_TO_GROUP={'白朗姆酒':'spirit','波本威士忌':'spirit','龙舌兰酒':'spirit','金酒':'spirit','干邑白兰地':'spirit','裸麦威士忌':'spirit','日本威士忌':'spirit','威士忌':'spirit','陈年朗姆酒':'spirit','高度朗姆酒':'spirit','伏特加':'spirit','君度':'liqueur','金巴利':'liqueur','甜味美思':'liqueur','干味美思':'liqueur','橙皮酒':'liqueur','咖啡利口酒':'liqueur','糖浆':'syrup','杏仁糖浆':'syrup','法勒诺姆糖浆':'syrup','红石榴糖浆':'syrup','蜂蜜':'syrup','糖':'syrup','青柠':'fruit','柠檬':'fruit','橙子':'fruit','菠萝':'fruit','西柚':'fruit','苏打水':'mixer','汤力水':'mixer','可乐':'mixer','椰浆':'mixer','热水':'mixer','鲜奶油':'mixer','蛋清':'mixer','苦精':'mixer','薄荷':'garnish','橄榄':'garnish','樱桃':'garnish','肉桂棒':'garnish','盐':'garnish','冰':'ice'};
+var ING_GROUPS=[{key:'spirit',name:'基酒',emoji:'🥃'},{key:'liqueur',name:'利口酒',emoji:'🍷'},{key:'syrup',name:'糖浆',emoji:'🍯'},{key:'fruit',name:'水果',emoji:'🍋'},{key:'mixer',name:'调配',emoji:'🫧'},{key:'garnish',name:'装饰',emoji:'🌿'},{key:'ice',name:'冰',emoji:'🧊'}];
+
+var SK_G='ca_glasses_v2',SK_C='ca_categories_v2',SK_D='ca_cocktails_v2',SK_P='ca_pantry_v3',SK_IG='ca_ing_groups_v1',SK_IGG='ca_ing_group_defs_v1';
+function migrate(ok,nk,def){var d=localStorage.getItem(nk);if(d){try{return JSON.parse(d)}catch(e){}}for(var i=0;i<ok.length;i++){d=localStorage.getItem(ok[i]);if(d){try{var p=JSON.parse(d);localStorage.setItem(nk,d);return p}catch(e){}}}localStorage.setItem(nk,JSON.stringify(def));return def}
+function loadG(){var g=migrate([],SK_G,{});for(var k in DEF_GLASSES){if(!(k in g))g[k]=JSON.parse(JSON.stringify(DEF_GLASSES[k]))}localStorage.setItem(SK_G,JSON.stringify(g));return g}
+function loadCats(){return migrate(['ca_categories_v2','ca_cats2','ca_cats'],SK_C,JSON.parse(JSON.stringify(DEF_CATS)))}
+function loadCk(){var d=migrate(['ca_cocktails_v2','ca_v7','ca_v6','ca_v5','ca_v4','ca_v3','ca_v2','cocktail_alchemist_v3','cocktail_alchemist_v2','cocktail_alchemist_data'],SK_D,JSON.parse(JSON.stringify(DEF_CK)));d.forEach(function(c){if(!c.g)c.g='old-fashioned'});return d}
+function loadPantry(){var d=localStorage.getItem(SK_P);if(d){try{var a=JSON.parse(d);return a.map(canonical).filter(function(v,i,s){return s.indexOf(v)===i})}catch(e){}}return[]}
+function loadIngGroups(){var d=localStorage.getItem(SK_IG);if(d){try{return JSON.parse(d)}catch(e){}}return{}}
+var GLASSES=loadG(),CATS=loadCats(),C=loadCk(),PANTRY=loadPantry(),CUSTOM_GROUPS=loadIngGroups();
+function saveG(){localStorage.setItem(SK_G,JSON.stringify(GLASSES))}
+function saveCt(){localStorage.setItem(SK_C,JSON.stringify(CATS))}
+function saveCk(){localStorage.setItem(SK_D,JSON.stringify(C))}
+function savePantry(){localStorage.setItem(SK_P,JSON.stringify(PANTRY))}
+function saveIngGroups(){localStorage.setItem(SK_IG,JSON.stringify(CUSTOM_GROUPS))}
+var _igDefs=null;
+function getIGDefs(){if(!_igDefs){var d=localStorage.getItem(SK_IGG);if(d){try{_igDefs=JSON.parse(d)}catch(e){}}if(!_igDefs)_igDefs=JSON.parse(JSON.stringify(ING_GROUPS))}return _igDefs}
+function saveIGDefs(){localStorage.setItem(SK_IGG,JSON.stringify(_igDefs))}
+var HIDDEN_ING_KEY='ca_hidden_ing';
+function getHiddenIng(){var d=localStorage.getItem(HIDDEN_ING_KEY);if(d){try{return JSON.parse(d)}catch(e){}}return[]}
+function saveHiddenIng(h){localStorage.setItem(HIDDEN_ING_KEY,JSON.stringify(h))}
+function getIngGroup(n){return CUSTOM_GROUPS[n]||ING_TO_GROUP[n]||'other'}
+function cbk(k){for(var i=0;i<CATS.length;i++){if(CATS[i].key===k)return CATS[i]}return null}
+function cn(k){var c=cbk(k);return c?c.name:k}
+function ce(k){var c=cbk(k);return c?c.emoji:'🍹'}
+function cc(){var c={all:C.length};C.forEach(function(x){c[x.cat]=(c[x.cat]||0)+1});return c}
+function rG(key,sz){var g=GLASSES[key];if(!g||!g.s)return'';var p=g.vb.split(/[\s,]+/).map(Number),w=sz,h=Math.round(w*p[3]/p[2]),mx=Math.round(sz*1.3);if(h>mx){w=Math.round(mx*p[2]/p[3]);h=mx}return'<svg viewBox="'+g.vb+'" width="'+w+'" height="'+h+'" fill="none">'+g.s+'</svg>'}
+function rGR(vb,s,sz){var p=vb.split(/[\s,]+/).map(Number),w=sz,h=Math.round(w*p[3]/p[2]),mx=Math.round(sz*1.3);if(h>mx){w=Math.round(mx*p[2]/p[3]);h=mx}return'<svg viewBox="'+vb+'" width="'+w+'" height="'+h+'" fill="none">'+s+'</svg>'}
+function canMake(c){var h=getHiddenIng();return c.ing.every(function(i){var n=canonical(i.n);return PANTRY.indexOf(n)>=0||h.indexOf(n)>=0})}
+function getMissing(c){var seen={},h=getHiddenIng();return c.ing.filter(function(i){var n=canonical(i.n);if(PANTRY.indexOf(n)>=0||h.indexOf(n)>=0||seen[n])return false;seen[n]=true;return true}).map(function(i){return canonical(i.n)})}
+function getAllIngredients(){var a={};C.forEach(function(c){c.ing.forEach(function(i){var n=canonical(i.n);if(!a[n])a[n]=0;a[n]++})});return a}
+function getBases(c){var seen={},sp=[];c.ing.forEach(function(i){var n=i.n;if(getIngGroup(canonical(n))==='spirit'&&!seen[n]){seen[n]=true;sp.push(n)}});return sp.length?sp:(c.base?[c.base]:[])}
+function refreshAll(){updatePantryBar();rTabs();rGrid()}
+function updatePantryBar(){var bar=document.getElementById('pfBar'),hdr=document.querySelector('header');if(PANTRY.length>0){bar.classList.add('show');hdr.classList.add('on');document.getElementById('pfNum').textContent=C.filter(canMake).length;document.getElementById('pfTotal').textContent=C.length}else{bar.classList.remove('show');hdr.classList.remove('on')}}
+var _cCat='all';
+function rTabs(){var el=document.getElementById('tabs');var h='<button class="ct on" data-c="all"><span class="ce">🍹</span>全部<span class="cn">'+C.length+'</span></button>';CATS.forEach(function(c){h+='<button class="ct" data-c="'+c.key+'"><span class="ce">'+c.emoji+'</span>'+c.name+'<span class="cn">'+(cc()[c.key]||0)+'</span></button>'});el.innerHTML=h;el.querySelectorAll('.ct').forEach(function(t){t.addEventListener('click',function(){_cCat=t.dataset.c;el.querySelectorAll('.ct').forEach(function(x){x.classList.remove('on')});t.classList.add('on');rGrid()})})}
+function rGrid(){var gr=document.getElementById('grid'),q=document.getElementById('q').value.toLowerCase().trim(),useP=PANTRY.length>0;var ls=C.filter(function(c){if(_cCat!=='all'&&c.cat!==_cCat)return false;if(useP&&!canMake(c))return false;if(q){var g=GLASSES[c.g];var hay=[c.name,c.nameEn,c.desc,c.base].concat(getBases(c)).concat([cn(c.cat),g?g.n:'',g?g.e:'']).concat(c.ing.map(function(i){return i.n})).concat(c.tags||[]).concat([SL[c.str]||'']).join(' ').toLowerCase();return hay.indexOf(q)>=0}return true});if(!ls.length){gr.innerHTML='<div class="emp"><p>'+(useP?'没有能调的酒，试试修改材料柜':'没有匹配结果')+'</p></div>';return}gr.innerHTML=ls.map(function(c,i){var cce=ce(c.cat),ccn=cn(c.cat),g=GLASSES[c.g]||{},sl=SL[c.str]||'',sc=c.str[0]==='l'?'sl':c.str[0]==='m'?'sm':'ss';var tags=(c.tags||[]).map(function(t){return'<span class="tag" data-t="'+t+'">'+t+'</span>'}).join('');return'<div class="cd" data-id="'+c.id+'" style="animation-delay:'+Math.min(i*.04,.3)+'s"><div class="cd-glass">'+rG(c.g,48)+'</div><div class="cd-cat-row"><span class="ccb">'+cce+' '+ccn+'</span><span class="cgn">'+(g.n||'')+'</span></div><div class="cd-name">'+c.name+'</div><div class="cd-en">'+c.nameEn+'</div><div class="cd-desc">'+c.desc+'</div><div class="cd-foot"><div class="tags"><span class="tag '+sc+'" data-t="'+sl+'">'+sl+'</span>'+tags+'</div><div class="acts"><button class="act-btn ed" data-id="'+c.id+'">编辑</button><button class="act-btn del" data-id="'+c.id+'">删除</button></div></div></div>'}).join('');gr.querySelectorAll('.cd').forEach(function(el){el.addEventListener('click',function(e){if(!e.target.closest('.act-btn'))shD(el.dataset.id)})});gr.querySelectorAll('.act-btn.ed').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();opE(b.dataset.id)})});gr.querySelectorAll('.act-btn.del').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();delCk(b.dataset.id)})});gr.querySelectorAll('.tag').forEach(function(t){t.addEventListener('click',function(e){e.stopPropagation();document.getElementById('q').value=e.target.dataset.t;rGrid()})})}
+function shD(id){var c=C.find(function(x){return x.id===id});if(!c)return;var cce=ce(c.cat),ccn=cn(c.cat),g=GLASSES[c.g]||{},sl=SL[c.str]||'';var stps=c.stp&&c.stp.length?'<div class="ds"><div class="dst">制作步骤</div><ol class="dss">'+c.stp.map(function(s){return'<li>'+s+'</li>'}).join('')+'</ol></div>':'';var miss='';if(PANTRY.length>0&&!canMake(c)){var mn=getMissing(c);miss='<div style="text-align:center;margin-bottom:16px;padding:10px;background:rgba(191,159,77,.08);border:1px solid #4a3f2a;border-radius:var(--r)"><span style="font-family:var(--fm);font-size:.76rem;color:#bf9f4d">缺少: '+mn.join('、')+'</span></div>'}document.getElementById('dB').innerHTML='<div class="dgi">'+rG(c.g,80)+'</div><div class="dn">'+c.name+'</div><div class="de">'+c.nameEn+'</div><div class="dm"><span class="mb2 c">'+cce+' '+ccn+'</span><span class="mb2">'+sl+'</span><span class="mb2">'+(g.n||'')+'</span>'+'<span class="mb2">基酒: '+getBases(c).join(' · ')+'</span>'+'</div><div class="dd">'+c.desc+'</div>'+miss+'<div class="ds"><div class="dst">配料清单</div><ul class="di">'+c.ing.map(function(i){var has=PANTRY.indexOf(canonical(i.n))>=0;return'<li><span class="in2">'+(PANTRY.length>0?(has?'✓ ':'✗ '):'')+i.n+'</span><span class="ia">'+i.a+'</span></li>'}).join('')+'</ul></div>'+stps+'<div class="dft">标签: '+(c.tags&&c.tags.length?c.tags.join(' / '):'无')+'</div>'+'<div style="text-align:center;margin-top:18px"><button class="bc" id="dExp">导出此配方</button></div>';document.getElementById('dExp').addEventListener('click',function(){exportRecipe(c.id)});document.getElementById('dO').classList.add('on')}
+
+/* ===== 分组选择弹窗 ===== */
+var _gpPopup=null;
+function showGroupPopup(name,anchor){closeGroupPopup();var rect=anchor.getBoundingClientRect();var popup=document.createElement('div');popup.className='gp-popup';var html='';getIGDefs().forEach(function(g){var active=getIngGroup(name)===g.key?' active':'';html+='<span class="gp-opt'+active+'" data-g="'+g.key+'">'+g.emoji+' '+g.name+'</span>'});popup.innerHTML=html;document.body.appendChild(popup);var pw=popup.offsetWidth,ph=popup.offsetHeight,top=rect.bottom+4,left=rect.left;if(left+pw>window.innerWidth-8)left=window.innerWidth-pw-8;if(left<8)left=8;if(top+ph>window.innerHeight-8)top=rect.top-ph-4;popup.style.top=top+'px';popup.style.left=left+'px';popup.querySelectorAll('.gp-opt').forEach(function(opt){opt.addEventListener('click',function(e){e.stopPropagation();CUSTOM_GROUPS[name]=opt.dataset.g;saveIngGroups();closeGroupPopup();openPantry()})});_gpPopup=popup;setTimeout(function(){document.addEventListener('click',_gpCloseOut)},10)}
+function closeGroupPopup(){if(_gpPopup){_gpPopup.remove();_gpPopup=null;document.removeEventListener('click',_gpCloseOut)}}
+function _gpCloseOut(e){if(_gpPopup&&!_gpPopup.contains(e.target))closeGroupPopup()}
+
+/* ===== 材料柜 ===== */
+function openPantry(){closeGroupPopup();var el=document.getElementById('pGrid'),all=getAllIngredients(),hidden=getHiddenIng(),keys=Object.keys(all).filter(function(n){return hidden.indexOf(n)<0}).sort();var groups={};getIGDefs().forEach(function(g){groups[g.key]=[]});groups.other=[];keys.forEach(function(n){var gKey=getIngGroup(n);if(!groups[gKey])groups[gKey]=[];groups[gKey].push(n)});var html='';getIGDefs().forEach(function(g){var items=groups[g.key];if(!items||!items.length)return;html+='<div class="p-group" data-g="'+g.key+'"><div class="p-group-title">'+g.emoji+' '+g.name+'</div><div class="p-group-items">';items.forEach(function(n){var sel=PANTRY.indexOf(n)>=0;html+='<span class="p-item'+(sel?' on':'')+'" data-n="'+n+'"><span class="p-ge" data-gn="'+n+'">'+g.emoji+'</span>'+n+'<span class="p-cnt">'+all[n]+'</span><span class="p-del" title="隐藏此材料">×</span></span>'});html+='</div></div>'});if(groups.other&&groups.other.length){html+='<div class="p-group" data-g="other"><div class="p-group-title">📦 其他</div><div class="p-group-items">';groups.other.forEach(function(n){var sel=PANTRY.indexOf(n)>=0;html+='<span class="p-item'+(sel?' on':'')+'" data-n="'+n+'"><span class="p-ge" data-gn="'+n+'">📦</span>'+n+'<span class="p-cnt">'+all[n]+'</span><span class="p-del" title="隐藏此材料">×</span></span>'});html+='</div></div>'}el.innerHTML=html;el.querySelectorAll('.p-item').forEach(function(it){it.addEventListener('click',function(e){if(e.target.closest('.p-ge')||e.target.closest('.p-del'))return;it.classList.toggle('on');savePantryLive();updatePantryStats()})});el.querySelectorAll('.p-ge').forEach(function(ge){ge.addEventListener('click',function(e){e.stopPropagation();showGroupPopup(ge.dataset.gn,ge)})});el.querySelectorAll('.p-del').forEach(function(btn){btn.addEventListener('click',function(e){e.stopPropagation();var n=btn.closest('.p-item').dataset.n;toggleHideIng(n)})});updatePantryStats();document.getElementById('pQ').value='';document.getElementById('pO').classList.add('on')}
+function updatePantryStats(){var sel=[];document.querySelectorAll('#pGrid .p-item.on').forEach(function(it){sel.push(it.dataset.n)});var cnt=C.filter(function(c){return c.ing.every(function(i){return sel.indexOf(canonical(i.n))>=0})}).length;document.getElementById('pStats').innerHTML='已选 <strong>'+sel.length+'</strong> 种 · 可调 <strong>'+cnt+'</strong> / '+C.length+' 款'}
+function savePantryLive(){var sel=[];document.querySelectorAll('#pGrid .p-item.on').forEach(function(it){sel.push(it.dataset.n)});PANTRY=sel;savePantry();refreshAll()}
+function toggleHideIng(n){var h=getHiddenIng(),i=h.indexOf(n);if(i>=0){h.splice(i,1)}else{h.push(n)}saveHiddenIng(h);openPantry()}
+
+/* ===== 材料分类管理 ===== */
+function openIGMgr(){var el=document.getElementById('igL'),defs=getIGDefs();el.innerHTML='';defs.forEach(function(g){var cnt=0;Object.keys(getAllIngredients()).forEach(function(n){if(getIngGroup(n)===g.key)cnt++});var row=document.createElement('div');row.className='cm-row';row.innerHTML='<input class="cm-emoji" value="'+g.emoji+'" maxlength="4" /><input class="cm-name" value="'+g.name+'" /><span class="cm-count">'+cnt+' 种</span><button class="cm-del">&times;</button>';row.querySelector('.cm-emoji').dataset.key=g.key;row.querySelector('.cm-name').dataset.key=g.key;el.appendChild(row)});var _hiddenList=getHiddenIng();if(_hiddenList.length>0){var hr=document.createElement('div');hr.style.cssText='margin-top:16px;padding-top:12px;border-top:1px solid var(--bd)';hr.innerHTML='<div style="font-family:var(--fm);font-size:.68rem;color:var(--tm);letter-spacing:.12em;margin-bottom:8px">已隐藏的材料（点击恢复）</div>';var wg=document.createElement('div');wg.style.cssText='display:flex;flex-wrap:wrap;gap:8px';_hiddenList.forEach(function(n){var sp=document.createElement('span');sp.className='p-item';sp.style.cssText='font-size:.78rem;cursor:pointer;opacity:.6';sp.textContent=n;sp.addEventListener('click',function(){var h=getHiddenIng(),i=h.indexOf(n);if(i>=0){h.splice(i,1);saveHiddenIng(h);sp.remove()}});wg.appendChild(sp)});hr.appendChild(wg);el.appendChild(hr)}document.getElementById('igO').classList.add('on')}
+document.getElementById('igAdd').addEventListener('click',function(){var el=document.getElementById('igL');var key='custom_'+Date.now();var row=document.createElement('div');row.className='cm-row';row.innerHTML='<input class="cm-emoji" value="📦" maxlength="4" /><input class="cm-name" value="" placeholder="输入分类名称" /><span class="cm-count">0 种</span><button class="cm-del">&times;</button>';row.querySelector('.cm-emoji').dataset.key=key;row.querySelector('.cm-name').dataset.key=key;el.appendChild(row);row.querySelector('.cm-name').focus()});
+document.getElementById('igL').addEventListener('click',function(e){var btn=e.target.closest('.cm-del');if(!btn)return;var rows=document.querySelectorAll('#igL .cm-row');if(rows.length<=1){showT('至少保留一个材料分类');return}var row=btn.closest('.cm-row');var key=row.querySelector('.cm-emoji').dataset.key;var cnt=0;Object.keys(getAllIngredients()).forEach(function(n){if(getIngGroup(n)===key)cnt++});var doDel=function(){Object.keys(CUSTOM_GROUPS).forEach(function(n){if(CUSTOM_GROUPS[n]===key)delete CUSTOM_GROUPS[n]});saveIngGroups();row.remove()};if(cnt>0){showCfm('确认删除','该分类下有 '+cnt+' 种材料，删除后将归入"其他"',doDel)}else{doDel()}});
+document.getElementById('igOk').addEventListener('click',function(){var rows=document.querySelectorAll('#igL .cm-row'),nc=[];rows.forEach(function(row){var emoji=row.querySelector('.cm-emoji').value.trim()||'📦';var name=row.querySelector('.cm-name').value.trim();if(!name)return;var key=row.querySelector('.cm-emoji').dataset.key;nc.push({key:key,name:name,emoji:emoji})});if(!nc.length){showT('至少保留一个材料分类');return}_igDefs=nc;saveIGDefs();document.getElementById('igO').classList.remove('on');openPantry();showT('材料分类已更新')});
+document.getElementById('igNo').addEventListener('click',function(){document.getElementById('igO').classList.remove('on')});
+document.getElementById('igC').addEventListener('click',function(){document.getElementById('igO').classList.remove('on')});
+document.getElementById('pMgr').addEventListener('click',function(){openIGMgr()});
+
+/* ===== 杯型管理 ===== */
+function openGM(){document.getElementById('gTitle').textContent='管理杯型';showGL();document.getElementById('gO').classList.add('on')}
+function showGL(){var el=document.getElementById('gBody'),ct={};C.forEach(function(c){ct[c.g]=(ct[c.g]||0)+1});var h='<div class="cm-list">';var ks=Object.keys(GLASSES);for(var i=0;i<ks.length;i++){var k=ks[i],g=GLASSES[k];h+='<div class="gl-row"><div class="gl-pv">'+rG(k,32)+'</div><span class="gl-nm">'+g.n+'</span><span class="gl-nm-en">'+g.e+'</span><span class="cm-count">'+(ct[k]||0)+' 款</span><button class="cbn ge" data-k="'+k+'">编辑</button><button class="cbn x gd" data-k="'+k+'">&times;</button></div>'}h+='</div><button type="button" class="btn-add-r" id="gAddB">+ 添加新杯型</button><div class="cm-footer"><button type="button" class="bc" id="gCloseB">关闭</button></div>';el.innerHTML=h;el.querySelectorAll('.ge').forEach(function(b){b.addEventListener('click',function(){showGE(b.dataset.k)})});el.querySelectorAll('.gd').forEach(function(b){b.addEventListener('click',function(){delGl(b.dataset.k)})});document.getElementById('gAddB').addEventListener('click',function(){showGE(null)});document.getElementById('gCloseB').addEventListener('click',function(){document.getElementById('gO').classList.remove('on')})}
+function showGE(key){var isNew=!key,g=key?GLASSES[key]:{n:'',e:'',vb:'0 0 40 50',s:''};if(!key)key='glass_'+Date.now();var el=document.getElementById('gBody');document.getElementById('gTitle').textContent=isNew?'添加新杯型':'编辑杯型';var th='';GLASS_TPLS.forEach(function(t,i){th+='<button type="button" class="gl-tpl" data-i="'+i+'">'+rGR(t.vb,t.s,32)+'<span>'+t.n+'</span></button>'});Object.keys(GLASSES).forEach(function(k){th+='<button type="button" class="gl-tpl" data-k="'+k+'">'+rG(k,32)+'<span>'+GLASSES[k].n+'</span></button>'});el.innerHTML='<div class="gl-pv-lg" id="gePrv"></div><div class="fr"><div class="fg"><label>中文名称</label><input id="geNm" value="'+g.n+'"/></div><div class="fg"><label>英文名称</label><input id="geNe" value="'+g.e+'"/></div></div><details class="gl-adv"><summary>SVG 编辑</summary><div class="fg"><label>viewBox</label><input id="geVb" value="'+g.vb+'"/></div><div class="fg"><label>SVG</label><textarea id="geSv" rows="6"></textarea></div></details><div class="fg"><label>选择模板</label><div class="gl-tpl-grid">'+th+'</div></div><div class="fa"><button type="button" class="bc" id="geBack">返回</button><button type="button" class="bs" id="geSave" data-key="'+key+'">'+(isNew?'创建':'保存')+'</button></div>';document.getElementById('geSv').value=g.s;document.getElementById('geVb').value=g.vb;upPrv();document.getElementById('geSv').addEventListener('input',upPrv);document.getElementById('geVb').addEventListener('input',upPrv);el.querySelectorAll('.gl-tpl').forEach(function(b){b.addEventListener('click',function(){var t=b.dataset.i!==undefined?GLASS_TPLS[+b.dataset.i]:GLASSES[b.dataset.k];if(t){document.getElementById('geVb').value=t.vb;document.getElementById('geSv').value=t.s;upPrv()}})});document.getElementById('geBack').addEventListener('click',function(){showGL()});document.getElementById('geSave').addEventListener('click',function(){var nm=document.getElementById('geNm').value.trim();if(!nm){showT('请输入名称');return}var dup=Object.keys(GLASSES).some(function(k){return k!==key&&GLASSES[k].n===nm});if(dup){showT('杯型名重复：「'+nm+'」');return}GLASSES[key]={n:nm,e:document.getElementById('geNe').value.trim()||'Glass',vb:document.getElementById('geVb').value.trim()||'0 0 40 50',s:document.getElementById('geSv').value};saveG();showGL();rGPicker();rGrid();showT(isNew?'已创建':'已更新')})}
+function upPrv(){var el=document.getElementById('gePrv');try{el.innerHTML=rGR(document.getElementById('geVb').value,document.getElementById('geSv').value,80)}catch(e){el.innerHTML='<span style="color:var(--dg)">SVG 错误</span>'}}
+function delGl(key){if(Object.keys(GLASSES).length<=1){showT('至少保留一个杯型');return}showCfm('删除杯型','确定删除「'+GLASSES[key].n+'」？',function(){delete GLASSES[key];var fb=Object.keys(GLASSES)[0]||'';C.forEach(function(c){if(c.g===key)c.g=fb});saveG();saveCk();showGL();rGPicker();rGrid();showT('已删除')})}
+
+/* ===== 分类管理 ===== */
+function openCM(){var el=document.getElementById('cmL'),ct=cc();el.innerHTML='';CATS.forEach(function(cat,i){var n=ct[cat.key]||0,row=document.createElement('div');row.className='cm-row';row.innerHTML='<input class="cm-emoji" value="'+cat.emoji+'" maxlength="4" data-i="'+i+'"/><input class="cm-name" value="'+cat.name+'"/><span class="cm-count">'+n+' 款</span><button type="button" class="cm-del" data-i="'+i+'">&times;</button>';el.appendChild(row)});document.getElementById('mO').classList.add('on')}
+document.getElementById('cmL').addEventListener('click',function(e){var btn=e.target.closest('.cm-del');if(!btn)return;var rows=document.querySelectorAll('#cmL .cm-row');if(rows.length<=1){showT('至少保留一个');return}var row=btn.closest('.cm-row');var emojiInput=row.querySelector('.cm-emoji');var idx=emojiInput&&emojiInput.dataset.i!==undefined?+emojiInput.dataset.i:-1;var catObj=idx>=0?CATS[idx]:null;var n=catObj?(cc()[catObj.key]||0):0;var name=catObj?catObj.name:row.querySelector('.cm-name').value||'此分类';if(n>0){showCfm('删除分类','「'+name+'」下有 '+n+' 款酒。',function(){row.remove()})}else{row.remove()}});
+document.getElementById('cmAdd').addEventListener('click',function(){var el=document.getElementById('cmL'),row=document.createElement('div');row.className='cm-row';row.innerHTML='<input class="cm-emoji" value="🍹" maxlength="4"/><input class="cm-name" value="" placeholder="名称"/><span class="cm-count">0 款</span><button type="button" class="cm-del">&times;</button>';el.appendChild(row);row.querySelector('.cm-name').focus()});
+document.getElementById('cmOk').addEventListener('click',function(){var rows=document.querySelectorAll('#cmL .cm-row'),nc=[],used={};rows.forEach(function(row){var emoji=row.querySelector('.cm-emoji').value.trim()||'🍹',name=row.querySelector('.cm-name').value.trim();if(!name)return;var idx=+row.querySelector('.cm-emoji').dataset.i;var key=(CATS[idx]&&idx>=0&&idx<CATS.length)?CATS[idx].key:'cat_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);while(used[key])key+='_';used[key]=true;nc.push({key:key,name:name,emoji:emoji})});if(!nc.length){showT('至少一个分类');return}var seen={};for(var i=0;i<nc.length;i++){if(seen[nc[i].name]){showT('分类名重复：「'+nc[i].name+'」');return}seen[nc[i].name]=true}var vk={};nc.forEach(function(c){vk[c.key]=true});C.forEach(function(c){if(!vk[c.cat])c.cat=nc[0].key});CATS=nc;saveCt();saveCk();cMO();refreshAll();showT('已保存')});
+
+/* ===== 编辑 ===== */
+function rGPicker(sel){var el=document.getElementById('gp');if(!el)return;var h='',ks=Object.keys(GLASSES);for(var i=0;i<ks.length;i++){var k=ks[i],g=GLASSES[k],p=g.vb.split(/[\s,]+/).map(Number),w=32,h2=Math.round(w*Math.min(p[3]/p[2],1.4));h+='<button type="button" class="go'+(k===sel?' sel':'')+'" data-g="'+k+'"><div class="go-icon"><svg viewBox="'+g.vb+'" width="'+w+'" height="'+h2+'" fill="none">'+g.s+'</svg></div><span>'+g.n+'</span></button>'}el.innerHTML=h;el.querySelectorAll('.go').forEach(function(b){b.addEventListener('click',function(){el.querySelectorAll('.go').forEach(function(o){o.classList.remove('sel')});b.classList.add('sel');document.getElementById('fG').value=b.dataset.g})})}
+function pCSel(v){var s=document.getElementById('fCt');s.innerHTML='<option value="">— 选择分类 —</option>';CATS.forEach(function(c){var o=document.createElement('option');o.value=c.key;o.textContent=c.emoji+' '+c.name;s.appendChild(o)});var oc=document.createElement('option');oc.value='__c';oc.textContent='✏️ 自定义';s.appendChild(oc);var ci=document.getElementById('fCc');if(v&&cbk(v)){s.value=v;ci.style.display='none'}else if(v){s.value='__c';ci.style.display='block';ci.value=v}else{s.value='';ci.style.display='none'}}
+function opE(id){var c=id?C.find(function(x){return x.id===id}):null;document.getElementById('eT').textContent=c?'编辑鸡尾酒':'添加鸡尾酒';document.getElementById('fId').value=c?c.id:'';document.getElementById('fNm').value=c?c.name:'';document.getElementById('fNe').value=c?c.nameEn:'';document.getElementById('fG').value=c?c.g:Object.keys(GLASSES)[0]||'';document.getElementById('fSt').value=c?c.str:'medium';document.getElementById('fDc').value=c?c.desc:'';document.getElementById('fBs').value=c?c.base:'';rTgPicker(c?c.tags:[]);document.getElementById('fTgNew').value='';pCSel(c?c.cat:'');rGPicker(c?c.g:Object.keys(GLASSES)[0]||'');var il=document.getElementById('il');il.innerHTML='';(c?c.ing:[{n:'',a:''}]).forEach(function(i){addI(i.n,i.a)});var sl=document.getElementById('sl');sl.innerHTML='';(c?c.stp:['']).forEach(function(s){addS(s)});document.getElementById('eO').classList.add('on')}
+function addI(n,a){n=n||'';a=a||'';var l=document.getElementById('il'),r=document.createElement('div');r.className='ir';r.innerHTML='<input placeholder="配料" value="'+n+'"/><input placeholder="用量" value="'+a+'"/><button type="button" class="rm">&times;</button>';r.querySelector('.rm').addEventListener('click',function(){if(l.children.length>1)r.remove()});l.appendChild(r)}
+function addS(t){t=t||'';var l=document.getElementById('sl'),r=document.createElement('div');r.className='sr';r.innerHTML='<div class="sn">'+(l.children.length+1)+'</div><textarea placeholder="步骤描述" rows="2">'+t+'</textarea><button type="button" class="rm" style="margin-top:8px;width:26px;height:26px;font-size:.8rem">&times;</button>';r.querySelector('.rm').addEventListener('click',function(){if(l.children.length>1){r.remove();document.querySelectorAll('#sl .sn').forEach(function(e,i){e.textContent=i+1})}});l.appendChild(r)}
+function cE(){document.getElementById('eO').classList.remove('on')}
+function cD(){document.getElementById('dO').classList.remove('on')}
+function cMO(){document.getElementById('mO').classList.remove('on')}
+document.getElementById('fCt').addEventListener('change',function(e){var ci=document.getElementById('fCc');ci.style.display=e.target.value==='__c'?'block':'none';if(e.target.value==='__c')ci.focus()});
+
+document.getElementById('frm').addEventListener('submit',function(e){e.preventDefault();var id=document.getElementById('fId').value,cat=document.getElementById('fCt').value;if(cat==='__c')cat=document.getElementById('fCc').value.trim();if(!cat)cat=CATS[0]?CATS[0].key:'other';var ing=[];document.querySelectorAll('#il .ir').forEach(function(r){var ins=r.querySelectorAll('input'),n=ins[0].value.trim(),a=ins[1].value.trim();if(n)ing.push({n:n,a:a})});var stp=[];document.querySelectorAll('#sl .sr textarea').forEach(function(t){var v=t.value.trim();if(v)stp.push(v)});var tags=[];document.querySelectorAll('#tgGrid .tg-item.on').forEach(function(el){tags.push(el.dataset.t)});var nw=document.getElementById('fTgNew').value.trim();if(nw&&tags.indexOf(nw)<0)tags.push(nw);var newName=document.getElementById('fNm').value.trim();var dup=C.some(function(c){return c.name===newName&&c.id!==id});if(dup){showT('已存在同名配方「'+newName+'」');return}var oldAll=getAllIngredients();var ck={id:id||'c'+Date.now(),name:document.getElementById('fNm').value.trim(),nameEn:document.getElementById('fNe').value.trim(),g:document.getElementById('fG').value||Object.keys(GLASSES)[0]||'',cat:cat,str:document.getElementById('fSt').value,desc:document.getElementById('fDc').value.trim(),base:document.getElementById('fBs').value.trim(),ing:ing,stp:stp,tags:tags};if(id){var idx=C.findIndex(function(c){return c.id===id});if(idx!==-1)C[idx]=ck}else C.push(ck);saveCk();var newAll=getAllIngredients();var newOnes=Object.keys(newAll).filter(function(k){return !oldAll[k]});if(newOnes.length>0){setTimeout(function(){showT('新材料已加入材料柜: '+newOnes.join('、'))},300)}cE();refreshAll();showT(id?'配方已更新':'新配方已添加')});
+
+function delCk(id){var c=C.find(function(x){return x.id===id});showCfm('删除配方','确定删除「'+(c?c.name:'')+'」？',function(){C=C.filter(function(c){return c.id!==id});saveCk();refreshAll();showT('已删除')})}
+function showCfm(title,msg,onOk){document.getElementById('cfTi').textContent=title;document.getElementById('cfTx').textContent=msg;var ac=document.getElementById('cfAc');ac.innerHTML='';var yb=document.createElement('button');yb.className='bs';yb.textContent='确认';yb.style.background='var(--dg)';var nb=document.createElement('button');nb.className='bc';nb.textContent='取消';ac.appendChild(nb);ac.appendChild(yb);document.getElementById('cfOv').classList.add('on');yb.addEventListener('click',function(){onOk();document.getElementById('cfOv').classList.remove('on')});nb.addEventListener('click',function(){document.getElementById('cfOv').classList.remove('on')})}
+function showT(m,isErr){var t=document.getElementById('toast');t.textContent=m;t.className='toast on'+(isErr?' error':'');setTimeout(function(){t.classList.remove('on')},2500)}
+function rTgPicker(sel){sel=sel||[];var el=document.getElementById('tgGrid');if(!el)return;var all={};C.forEach(function(c){(c.tags||[]).forEach(function(t){all[t]=true})});var h='';Object.keys(all).sort().forEach(function(t){h+='<span class="tg-item'+(sel.indexOf(t)>=0?' on':'')+'" data-t="'+t+'">'+t+'</span>'});el.innerHTML=h;el.querySelectorAll('.tg-item').forEach(function(it){it.addEventListener('click',function(){it.classList.toggle('on')})})}
+document.getElementById('aTg').addEventListener('click',function(){var inp=document.getElementById('fTgNew'),val=inp.value.trim();if(!val)return;var ex=document.querySelector('#tgGrid .tg-item[data-t="'+val+'"]');if(ex){ex.classList.add('on')}else{var sp=document.createElement('span');sp.className='tg-item on';sp.dataset.t=val;sp.textContent=val;sp.addEventListener('click',function(){sp.classList.toggle('on')});document.getElementById('tgGrid').appendChild(sp)}inp.value='';inp.focus()});
+
+/* ===== 事件绑定 ===== */
+document.querySelector('.logo-g').addEventListener('click',function(){opE(null)});
+document.querySelector('header h1 span').addEventListener('click', openPantry);
+document.getElementById('pfEdit').addEventListener('click',openPantry);
+document.getElementById('pfReset').addEventListener('click',function(){showCfm('清除材料柜','确定清除？主页将显示全部鸡尾酒。',function(){PANTRY=[];savePantry();refreshAll();showT('已清除')})});
+document.getElementById('eC').addEventListener('click',cE);document.getElementById('bCn').addEventListener('click',cE);
+document.getElementById('dC').addEventListener('click',cD);document.getElementById('mC').addEventListener('click',cMO);
+document.getElementById('cmNo').addEventListener('click',cMO);
+document.getElementById('gC').addEventListener('click',function(){document.getElementById('gO').classList.remove('on')});
+document.getElementById('aI').addEventListener('click',function(){addI()});document.getElementById('aS').addEventListener('click',function(){addS()});
+document.getElementById('pC').addEventListener('click',function(){closeGroupPopup();document.getElementById('pO').classList.remove('on')});
+document.getElementById('pDone').addEventListener('click',function(){closeGroupPopup();document.getElementById('pO').classList.remove('on');if(PANTRY.length>0)showT('可调 '+C.filter(canMake).length+' 款')});
+document.getElementById('pAll').addEventListener('click',function(){document.querySelectorAll('#pGrid .p-item:not(.hidden)').forEach(function(it){it.classList.add('on')});savePantryLive();updatePantryStats()});
+document.getElementById('pNone').addEventListener('click',function(){document.querySelectorAll('#pGrid .p-item').forEach(function(it){it.classList.remove('on')});savePantryLive();updatePantryStats()});
+document.getElementById('pInv').addEventListener('click',function(){document.querySelectorAll('#pGrid .p-item:not(.hidden)').forEach(function(it){it.classList.toggle('on')});savePantryLive();updatePantryStats()});
+document.getElementById('pQ').addEventListener('input',function(){var q=this.value.trim().toLowerCase();document.querySelectorAll('#pGrid .p-item').forEach(function(it){it.classList.toggle('hidden',q&&it.dataset.n.toLowerCase().indexOf(q)<0)});document.querySelectorAll('#pGrid .p-group').forEach(function(g){g.classList.toggle('hidden',!g.querySelector('.p-item:not(.hidden)'))})});
+document.getElementById('q').addEventListener('input',rGrid);
+['eO','dO','mO','gO','pO','igO','cfOv','wO','siO'].forEach(function(id){document.getElementById(id).addEventListener('click',function(e){if(e.target===e.currentTarget){document.getElementById(id).classList.remove('on');closeGroupPopup()}})});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){if(_gpPopup){closeGroupPopup();return}['cfOv','gO','mO','dO','eO','pO','igO','wO','siO'].forEach(function(id){if(document.getElementById(id).classList.contains('on')){document.getElementById(id).classList.remove('on')}})}});
+
+/* ===== 分类拖拽 ===== */
+(function(){var el=document.getElementById('tabs'),down=false,sx=0,sc=0;el.addEventListener('mousedown',function(e){if(e.target.closest('.ct:first-child'))return;down=true;sx=e.pageX;sc=el.scrollLeft;el.style.scrollBehavior='auto'});el.addEventListener('mousemove',function(e){if(!down)return;if(Math.abs(e.pageX-sx)>5){el.scrollLeft=sc-(e.pageX-sx);e.preventDefault()}});document.addEventListener('mouseup',function(){down=false;el.style.scrollBehavior='smooth'})})();
+
+/* ===== 导出导入 ===== */
+function exportAll(){var data={v:2,cocktails:C,categories:CATS,glasses:GLASSES,pantry:PANTRY,ingGroups:CUSTOM_GROUPS};var json=JSON.stringify(data,null,2);var blob=new Blob([json],{type:'application/json;charset=utf-8'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='alchemist_'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);showT('已导出 '+C.length+' 款配方')}
+
+/* ===== 智能导入（替换原 importAll） ===== */
+var _siRecipes=[],_siFormat='',_siStrategy='overwrite';
+
+function importAll(){
+  _siRecipes=[];_siFormat='';_siStrategy='overwrite';
+  document.getElementById('siPaste').value='';
+  document.getElementById('siInputArea').style.display='';
+  document.getElementById('siPreview').style.display='none';
+  document.getElementById('siO').classList.add('on');
+}
+
+/* 文件拖放 */
+var _siDrop=document.getElementById('siDrop');
+var _siFile=document.getElementById('siFile');
+_siDrop.addEventListener('dragover',function(e){e.preventDefault();_siDrop.classList.add('drag')});
+_siDrop.addEventListener('dragleave',function(){_siDrop.classList.remove('drag')});
+_siDrop.addEventListener('drop',function(e){e.preventDefault();_siDrop.classList.remove('drag');_siHandleFiles(e.dataTransfer.files)});
+_siFile.addEventListener('change',function(e){if(e.target.files.length)_siHandleFiles(e.target.files);_siFile.value=''});
+
+function _siHandleFiles(files){
+  for(var i=0;i<files.length;i++){
+    (function(f){
+      var reader=new FileReader();
+      reader.onload=function(e){_siProcessText(e.target.result,f.name)};
+      reader.readAsText(f,'utf-8');
+    })(files[i]);
+  }
+}
+
+function siParsePaste(){
+  var text=document.getElementById('siPaste').value;
+  if(!text.trim()){showT('请先粘贴配方文本',true);return}
+  _siProcessText(text,'粘贴内容');
+}
+
+function siClearPaste(){document.getElementById('siPaste').value=''}
+function siClearAll(){
+  _siRecipes=[];
+  document.getElementById('siInputArea').style.display='';
+  document.getElementById('siPreview').style.display='none';
+}
+
+function _siProcessText(text,source){
+  try{
+    var result=_siAutoDetect(text);
+    if(!result.recipes.length){showT('未能识别出配方，请检查内容格式',true);return}
+    _siFormat=result.format;
+    _siRecipes=result.recipes;
+    _siRenderPreview();
+    document.getElementById('siInputArea').style.display='none';
+    document.getElementById('siPreview').style.display='';
+    var L={json:'JSON格式',csv:'CSV格式',freeform:'智能解析'};
+    showT('从「'+source+'」识别出 '+result.recipes.length+' 款配方（'+L[result.format]+'）');
+  }catch(e){
+    showT('解析出错: '+(e.message||e),true);
+  }
+}
+
+/* ===== 自动检测引擎 ===== */
+var _UNITS='ml|cl|dl|l|oz|dash|dashes|drop|滴|片|颗|个|根|块|瓣|吧勺|茶匙|汤匙|杯|份|tsp|tbsp|teaspoon|tablespoon|pony|splash|part|parts|shot|shots|pinch';
+var _QRE=new RegExp('\\d+\\.?\\d*(?:\\s*[-~至]\\s*\\d+\\.?\\d*)?\\s*('+_UNITS+')(?![A-Za-z0-9])','i');
+
+var _VERBS_CN='倒入|加入|搅拌|摇匀|摇动|摇|装饰|放入|捣压|过滤|注入|润湿|混合|冰镇|点燃|挤出|切|磨|撒|淋|浮|调制|轻搅|缓慢|装满|双重过滤|干摇|加冰|放冰|挤油|抹盐|抹糖|沿杯壁|搅拌溶解|取出|铺上|放上|放置|缓缓|将|然后|接着|最后|再|制作|依次|所有|缓慢地|轻轻地';
+var _VERBS_RE=new RegExp('^('+_VERBS_CN+'|muddle|stir|shake|pour|mix|strain|garnish|fill|add|combine|blend|rim|squeeze|top|build|layer|float|flame|chill|serve|swizzle|roll|throw)','i');
+var _VERBS_CONTAINS=new RegExp(_VERBS_CN);
+
+function _siAutoDetect(text){
+  text=text.trim().replace(/$$citation:\s*\d+$$/gi,'').replace(/$$\d+$$/g,'');
+  if(!text)return{format:'empty',recipes:[]};
+  /* JSON */
+  try{var d=JSON.parse(text);var arr=d.cocktails||(Array.isArray(d)?d:null);if(arr&&Array.isArray(arr))return{format:'json',recipes:arr.map(_normRecipe).filter(Boolean)}}catch(e){}
+  /* CSV */
+  var fl=text.split('\n')[0]||'';
+  if((fl.match(/,/g)||[]).length>=3||(fl.match(/\t/g)||[]).length>=3){
+    try{var cr=_parseCSV(text);if(cr.length>0)return{format:'csv',recipes:cr}}catch(e){}
+  }
+  /* Freeform */
+  return{format:'freeform',recipes:_parseFreeform(text)};
+}
+
+function _normRecipe(c){
+  if(!c||!c.name)return null;
+  return{
+    id:c.id||_genId(),name:c.name||'',nameEn:c.nameEn||c.name_en||'',
+    g:c.g||c.glass||'old-fashioned',cat:c.cat||c.category||'classic',
+    str:_nStr(c.str||c.strength||'medium'),desc:c.desc||c.description||'',
+    base:c.base||'',
+    ing:(c.ing||c.ingredients||[]).map(function(i){return{n:i.n||i.name||'',a:i.a||i.amount||''}}).filter(function(i){return i.n}),
+    stp:c.stp||c.steps||[],tags:Array.isArray(c.tags)?c.tags:[]
+  };
+}
+
+/* CSV */
+function _parseCSV(text){
+  var lines=_csvLines(text.trim());
+  if(lines.length<2)return[];
+  var h=lines[0].map(function(x){return x.trim()});
+  var r=[];
+  for(var i=1;i<lines.length;i++){
+    var row=lines[i];
+    if(!row||(row.length===1&&!row[0].trim()))continue;
+    var obj={};
+    h.forEach(function(k,idx){obj[k]=(row[idx]||'').trim()});
+    var rc=_csvRow(obj);
+    if(rc)r.push(rc);
+  }
+  return r;
+}
+
+function _csvLines(text){
+  var lines=[],cur=[],field='',inQ=false;
+  for(var i=0;i<text.length;i++){
+    var ch=text[i];
+    if(inQ){
+      if(ch==='"'&&text[i+1]==='"'){field+='"';i++}
+      else if(ch==='"'){inQ=false}
+      else{field+=ch}
+    }else{
+      if(ch==='"'){inQ=true}
+      else if(ch===','){cur.push(field);field=''}
+      else if(ch==='\n'||(ch==='\r'&&text[i+1]==='\n')){
+        cur.push(field);field='';lines.push(cur);cur=[];
+        if(ch==='\r')i++;
+      }else{field+=ch}
+    }
+  }
+  cur.push(field);
+  if(cur.some(function(f){return f.trim()}))lines.push(cur);
+  return lines;
+}
+
+function _csvRow(o){
+  var n=o['中文名称']||o['名称']||o['name']||'';
+  if(!n)return null;
+  var ne=o['英文名称']||o['nameEn']||'';
+  var ir=o['配料']||o['ingredients']||'';
+  var ing=[];
+  if(ir)ir.split(/[;；]/).forEach(function(s){s=s.trim();if(!s)return;var p=s.split(/[:：]/);ing.push({n:p[0].trim(),a:p.slice(1).join(':').trim()})});
+  var sr=o['步骤']||o['steps']||'';
+  var stp=[];
+  if(sr)sr.split(/[;；]/).forEach(function(s){s=s.trim().replace(/^\d+[\.\、\)\.]\s*/,'');if(s)stp.push(s)});
+  var tr=o['标签']||o['tags']||'';
+  var tags=[];
+  if(tr)tr.split(/[;；,，\/]/).forEach(function(t){t=t.trim();if(t)tags.push(t)});
+  return{id:_genId(),name:n,nameEn:ne,g:_nGlass(o['杯型']||o['glass']||''),cat:_nCat(o['分类']||o['category']||''),str:_nStr(o['烈度']||o['strength']||''),desc:o['简介']||o['description']||'',base:o['基酒']||o['base']||'',ing:ing,stp:stp,tags:tags};
+}
+
+/* 归一化 */
+var _STR_MAP={'轻度':'light','中度':'medium','强烈':'strong','低度':'light','高度':'strong','烈':'strong','mild':'light','boozy':'strong'};
+var _CAT_MAP={'经典':'classic','酸酒':'sour','嗨棒':'highball','马天尼':'martini','曼哈顿':'manhattan','菲士':'fizz','司令':'sling','菲力帕':'flip','托蒂':'toddy','潘趣':'punch','提基':'tiki'};
+var _GLASS_MAP={'古典杯':'old-fashioned','高球杯':'highball','柯林杯':'collins','鸡尾酒杯':'coupe','马天尼杯':'martini','飓风杯':'hurricane','玛格丽特杯':'margarita','格兰凯恩':'glencairn','尼克诺拉杯':'nick-nora','红酒杯':'wine','烈酒杯':'shot','皮尔森杯':'pilsner','铜杯':'copper-mug','僵尸杯':'zombie','平底杯':'tumbler','笛形杯':'flute','白兰地杯':'snifter','啤酒杯':'mug'};
+
+function _nStr(s){s=(s||'').toLowerCase();return _STR_MAP[s]||(['light','medium','strong'].indexOf(s)>=0?s:'medium')}
+function _nCat(s){s=s.trim();return _CAT_MAP[s]||s||'classic'}
+function _nGlass(s){s=s.trim();return _GLASS_MAP[s]||s||'old-fashioned'}
+function _genId(){return 'r_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)}
+
+/* ===== 自由文本解析器 ===== */
+function _parseFreeform(text){
+  var allLines=text.split('\n');
+  var starts=[];
+  for(var i=0;i<allLines.length;i++){
+    if(_isRecipeName(allLines[i].trim()))starts.push(i);
+  }
+  if(starts.length===0){
+    var r=_parseOne(allLines);
+    return r&&r.name?[r]:[];
+  }
+  var recipes=[];
+  for(var b=0;b<starts.length;b++){
+    var s=starts[b];
+    var e=(b+1<starts.length)?starts[b+1]:allLines.length;
+    var r=_parseOne(allLines.slice(s,e));
+    if(r&&r.name)recipes.push(r);
+  }
+  return recipes;
+}
+
+function _isRecipeName(line){
+  if(!line||line.length<2||line.length>60)return false;
+  /* 排除元数据 */
+  if(/^(分类|类别|烈度|杯型|基酒|标签|步骤|材料|配料)[：:]/i.test(line))return false;
+  if(/^【/.test(line))return false;
+  if(/^\d+[\.\、]/.test(line))return false;
+  if(/^[─\-═━]{3,}\s*$/.test(line))return false;
+  /* 排除配料 */
+  if(_QRE.test(line))return false;
+  if(/适量|少许/.test(line))return false;
+  /* 排除含动作动词的行 */
+  if(_VERBS_CONTAINS.test(line))return false;
+  /* 排除含器皿名称的行 */
+  if(/杯|壶/.test(line))return false;
+  /* 排除含标点的描述性行 */
+  if(line.includes('。'))return false;
+  if(line.includes('，')&&line.length>15)return false;
+  /* 必须含文字 */
+  var hasCJK=/[\u4e00-\u9fa5]/.test(line);
+  var hasLat=/[A-Za-z]{2,}/.test(line);
+  if(!hasCJK&&!hasLat)return false;
+  /* 判断为标题 */
+  if(line.indexOf('/')>=0||line.indexOf('／')>=0)return true;
+  if(hasCJK&&hasLat)return true;
+  if(hasCJK&&!hasLat&&line.length<=8)return true;
+  if(hasLat&&!hasCJK&&/^[A-Z]/.test(line)&&line.length<=40&&!line.includes(':')&&!line.includes('：'))return true;
+  return false;
+}
+
+function _parseOne(lines){
+  var R={id:_genId(),name:'',nameEn:'',g:'old-fashioned',cat:'classic',str:'medium',desc:'',base:'',ing:[],stp:[],tags:[]};
+  var sec='auto',descL=[];
+  for(var i=0;i<lines.length;i++){
+    var line=lines[i].trim();
+    if(!line||line==='。'||line==='.')continue;
+    if(/^[─\-═━]{3,}\s*$/.test(line))continue;
+
+    /* 段落标记 【材料】【步骤】 */
+    var sm=line.match(/^【\s*(.+?)\s*】/);
+    if(sm){
+      var sn=sm[1];
+      if(/材料|配料|ingredients|materials/i.test(sn)){sec='ingredients';continue}
+      if(/步骤|做法|制作|instructions|steps|directions|method/i.test(sn)){sec='steps';continue}
+      continue;
+    }
+
+    /* 元数据（始终优先检查） */
+    var mm=line.match(/^(分类|类别|类型|烈度|酒精度|强度|杯型|杯子|基酒|标签|tags|glass|category|strength|base)[：:]\s*(.+)/i);
+    if(mm){
+      var k=mm[1].toLowerCase(),v=mm[2].trim();
+      if(/分类|类别|类型|category/.test(k))R.cat=_nCat(v);
+      else if(/烈度|酒精度|强度|strength/.test(k))R.str=_nStr(v);
+      else if(/杯型|杯子|glass/.test(k))R.g=_nGlass(v);
+      else if(/基酒|base/.test(k))R.base=v;
+      else if(/标签|tags/.test(k)){
+        v.split(/[;；,，\/]/).forEach(function(t){t=t.trim();if(t&&R.tags.indexOf(t)<0)R.tags.push(t)});
+      }
+      continue;
+    }
+
+    /* 名称（第一条符合条件的行） */
+    if(!R.name){
+      var t=_extractName(line);
+      if(t){R.name=t.name;R.nameEn=t.nameEn||'';continue}
+    }
+
+    /* 有明确标记的 section */
+    if(sec==='ingredients'){var ig=_parseIng(line);if(ig){R.ing.push(ig);continue}descL.push(line);continue}
+    if(sec==='steps'){var st=_parseStep(line);if(st){R.stp.push(st);continue}descL.push(line);continue}
+
+    /* ===== 自动分类 ===== */
+    /* 1. 数字编号开头 → 步骤 */
+    if(/^\d+[\.\、\)]/.test(line)){
+      var st=_parseStep(line);
+      if(st){R.stp.push(st);continue}
+    }
+    /* 2. 开头是动作动词 → 步骤 */
+    if(_VERBS_RE.test(line)){
+      var st=_parseStep(line);
+      if(st){R.stp.push(st);continue}
+    }
+    /* 3. 结尾是动作动词且无量词 → 步骤 */
+    if(!_QRE.test(line)){
+      if(/(倒入|加入|搅拌|摇匀|装饰|放入|捣压|过滤|注入|润湿|混合|冰镇|点燃|挤出|调制|轻搅|缓慢|装满|双重过滤|干摇|加冰|放冰|挤油|抹盐|抹糖|沿杯壁|搅拌溶解|取出|铺上|放上|放置|缓缓)$/.test(line)){
+        R.stp.push(line);continue;
+      }
+    }
+    /* 4. 含器皿指令且无量词 → 步骤 */
+    if(!_QRE.test(line)&&/杯|壶/.test(line)&&!/[\u4e00-\u9fa5]{2,8}酒/.test(line)){
+      R.stp.push(line);continue;
+    }
+    /* 5. 含量词 → 配料 */
+    var ig=_parseIng(line);
+    if(ig){R.ing.push(ig);continue}
+    /* 6. 其他 → 描述 */
+    descL.push(line);
+  }
+  R.desc=descL.join('\n').replace(/^\s*。\s*$/gm,'').trim();
+  /* 推断基酒 */
+  if(!R.base&&R.ing.length>0){
+    var sp=/朗姆|rum|威士忌|whiskey|whisky|bourbon|波本|金酒|gin|伏特加|vodka|龙舌兰|tequila|白兰地|brandy|干邑|cognac/i;
+    for(var j=0;j<R.ing.length;j++){if(sp.test(R.ing[j].n)){R.base=R.ing[j].n;break}}
+  }
+  return R;
+}
+
+function _extractName(line){
+  var s=line.replace(/^#{1,3}\s*/,'').replace(/^\d+[\.\、]\s*/,'').trim(),m;
+  if((m=s.match(/^[「《【$$](.+?)[」》】$$]$/)))s=m[1].trim();
+  var R={name:'',nameEn:''};
+  if((m=s.match(/^([\u4e00-\u9fa5·\-]+)\s*[$$（]([A-Za-z][A-Za-z\s&'\-]+)[$$）]$/))){R.name=m[1].trim();R.nameEn=m[2].trim()}
+  else if((m=s.match(/^([\u4e00-\u9fa5·\-]+)\s*[/／]\s*([A-Za-z][A-Za-z\s&'\-]+)$/))){R.name=m[1].trim();R.nameEn=m[2].trim()}
+  else if((m=s.match(/^([\u4e00-\u9fa5·\-]+)\s+([A-Za-z][A-Za-z\s&'\-]+)$/))){R.name=m[1].trim();R.nameEn=m[2].trim()}
+  else if(/^[\u4e00-\u9fa5·\-]+$/.test(s))R.name=s;
+  else if(/^[A-Z][a-zA-Z\s&'\-]+$/.test(s))R.name=s;
+  else R.name=s;
+  return R.name?R:null;
+}
+
+function _parseIng(line){
+  var s=line.replace(/^[\s]*[·•\-\*]\s*/,'').replace(/^[\s]*\d+[\.\、\)]\s*(?=[^\d])/,'');
+  if(!_QRE.test(s)&&!/适量|少许/i.test(s))return null;
+  var m;
+  if((m=s.match(/^(.+?)\s*[：:]\s*(.+)$/)))return{n:m[1].trim(),a:m[2].trim()};
+  var u1='^(.+?)\\s+(\\d+\\.?\\d*(?:\\s*[-~至]\\s*\\d+\\.?\\d*)?\\s*(?:'+_UNITS+'))(?:\\b.*)?$';
+  if((m=s.match(new RegExp(u1,'i'))))return{n:m[1].trim(),a:m[2].trim()};
+  var u2='^(\\d+\\.?\\d*(?:\\s*[-~至]\\s*\\d+\\.?\\d*)?\\s*(?:'+_UNITS+'))\\s+(.+)$';
+  if((m=s.match(new RegExp(u2,'i'))))return{n:m[2].trim(),a:m[1].trim()};
+  if((m=s.match(/^(.+?)\s+(适量|少许|to\s+taste)$/i)))return{n:m[1].trim(),a:m[2].trim()};
+  return null;
+}
+
+function _parseStep(line){
+  var s=line.replace(/^[\s]*[·•\-\*]\s*/,'');
+  var m=s.match(/^(\d+)[\.\、\)\]\s：:]\s*(.+)/);
+  if(m&&m[2].length>2)return m[2].trim();
+  if(_VERBS_RE.test(s)&&s.length>3&&s.length<120)return s;
+  return null;
+}
+
+/* ===== 预览渲染（含重复检测） ===== */
+function _siE(s){if(!s)return'';var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+function _siRenderPreview(){
+  var list=document.getElementById('siList'),countEl=document.getElementById('siCount'),badgeEl=document.getElementById('siFmtBadge');
+  var fmtN={json:'JSON',csv:'CSV',freeform:'智能解析'};
+  badgeEl.innerHTML='<span class="si-badge detected">'+(fmtN[_siFormat]||_siFormat)+'</span>';
+  var existN={};C.forEach(function(c){existN[c.name]=true});
+  var dupC=0,bDupC=0,batchS={};
+  _siRecipes.forEach(function(r){
+    r._dup=!!existN[r.name];r._batchDup=!!batchS[r.name];
+    if(r._dup)dupC++;if(r._batchDup)bDupC++;batchS[r.name]=true;
+  });
+  countEl.textContent=_siRecipes.length+' 款';
+  var notice='';
+  if(dupC>0||bDupC>0){
+    var ps=[];
+    if(dupC>0)ps.push(dupC+' 款与已有配方同名');
+    if(bDupC>0)ps.push(bDupC+' 款在导入列表中重复');
+    notice='<div class="si-dup-count">⚠️ '+ps.join('；')+'，请在下方选择处理策略</div>';
+  }
+  var strL={light:'轻度',medium:'中度',strong:'强烈'};
+  var html=notice;
+  _siRecipes.forEach(function(r,i){
+    var badges='';
+    if(r._dup)badges+='<span class="si-rbadge dup">⚠ 已存在同名配方</span>';
+    else if(r._batchDup)badges+='<span class="si-rbadge batch-dup">⚠ 列表内重复</span>';
+    else badges+='<span class="si-rbadge ok">无冲突</span>';
+    if(r.cat)badges+='<span class="si-rbadge cat">'+_siE(r.cat)+'</span>';
+    if(r.str)badges+='<span class="si-rbadge">'+(strL[r.str]||r.str)+'</span>';
+    if(r.base)badges+='<span class="si-rbadge">'+_siE(r.base)+'</span>';
+    var cls='si-recipe';
+    if(r._dup)cls+=' si-dup';
+    else if(r._batchDup)cls+=' si-batch-dup';
+    html+='<div class="'+cls+'">'
+      +'<div class="si-rhead" onclick="_siToggle('+i+')">'
+      +'<div class="si-ridx">'+(i+1)+'</div>'
+      +'<div class="si-rinfo"><div class="si-rname">'+_siE(r.name||'未识别')+'</div>'
+      +(r.nameEn?'<div class="si-ren">'+_siE(r.nameEn)+'</div>':'')
+      +'<div class="si-rbadges">'+badges+'</div></div>'
+      +'<div class="si-toggle" id="sit'+i+'">▼</div></div>'
+      +'<div class="si-rbody" id="sib'+i+'">'+_siCardBody(r,i)+'</div></div>';
+  });
+  list.innerHTML=html;
+}
+
+function _siCardBody(r,i){
+  var so='<option value="light"'+(r.str==='light'?' selected':'')+'>轻度</option>'
+    +'<option value="medium"'+(r.str==='medium'?' selected':'')+'>中度</option>'
+    +'<option value="strong"'+(r.str==='strong'?' selected':'')+'>强烈</option>';
+  var h='<div class="si-fr"><div class="si-fg"><label>中文名称</label><input id="sin_'+i+'" value="'+_siE(r.name)+'"/></div><div class="si-fg"><label>英文名称</label><input id="sien_'+i+'" value="'+_siE(r.nameEn)+'"/></div></div>';
+  h+='<div class="si-fr3"><div class="si-fg"><label>分类</label><input id="sic_'+i+'" value="'+_siE(r.cat)+'"/></div><div class="si-fg"><label>烈度</label><select id="sis_'+i+'">'+so+'</select></div><div class="si-fg"><label>杯型</label><input id="sig_'+i+'" value="'+_siE(r.g)+'"/></div></div>';
+  h+='<div class="si-fr"><div class="si-fg"><label>基酒</label><input id="sib2_'+i+'" value="'+_siE(r.base)+'"/></div><div class="si-fg"><label>标签（逗号分隔）</label><input id="sitg_'+i+'" value="'+_siE(r.tags.join(', '))+'"/></div></div>';
+  h+='<div class="si-fg"><label>简介</label><textarea id="sid_'+i+'" rows="2">'+_siE(r.desc)+'</textarea></div>';
+  h+='<div class="si-fg"><label>配料清单</label><div class="si-ings" id="siil_'+i+'">';
+  r.ing.forEach(function(ig,j){
+    h+='<div class="si-ing-r"><input data-ij="'+j+'" data-field="n" value="'+_siE(ig.n)+'" placeholder="配料"/><input data-ij="'+j+'" data-field="a" value="'+_siE(ig.a)+'" placeholder="用量"/><button class="si-rm" onclick="_siRmIng('+i+','+j+')">×</button></div>';
+  });
+  h+='</div><button class="si-add" onclick="_siAddIng('+i+')">+ 添加配料</button></div>';
+  h+='<div class="si-fg"><label>制作步骤</label><div class="si-stps" id="sisl_'+i+'">';
+  r.stp.forEach(function(s,j){
+    h+='<div class="si-stp-r"><div class="si-stp-n">'+(j+1)+'</div><textarea data-sj="'+j+'">'+_siE(s)+'</textarea><button class="si-rm" onclick="_siRmStp('+i+','+j+')">×</button></div>';
+  });
+  h+='</div><button class="si-add" onclick="_siAddStp('+i+')">+ 添加步骤</button></div>';
+  h+='<div class="si-rfoot"><button class="si-btn danger" onclick="_siRmRecipe('+i+')">删除此配方</button></div>';
+  return h;
+}
+
+function _siToggle(idx){
+  var b=document.getElementById('sib'+idx),t=document.getElementById('sit'+idx);
+  if(b.classList.contains('show')){_siSaveCard(idx);b.classList.remove('show');t.classList.remove('open')}
+  else{b.classList.add('show');t.classList.add('open')}
+}
+
+function _siSaveCard(idx){
+  var r=_siRecipes[idx];if(!r)return;
+  var el;
+  if((el=document.getElementById('sin_'+idx)))r.name=el.value.trim();
+  if((el=document.getElementById('sien_'+idx)))r.nameEn=el.value.trim();
+  if((el=document.getElementById('sic_'+idx)))r.cat=el.value.trim()||'classic';
+  if((el=document.getElementById('sis_'+idx)))r.str=el.value;
+  if((el=document.getElementById('sig_'+idx)))r.g=el.value.trim()||'old-fashioned';
+  if((el=document.getElementById('sib2_'+idx)))r.base=el.value.trim();
+  if((el=document.getElementById('sid_'+idx)))r.desc=el.value.trim();
+  if((el=document.getElementById('sitg_'+idx)))r.tags=el.value.split(/[,，]/).map(function(t){return t.trim()}).filter(Boolean);
+  var irs=document.querySelectorAll('#siil_'+idx+' .si-ing-r');
+  r.ing=[];
+  irs.forEach(function(row){
+    var n=row.querySelector('[data-field="n"]').value.trim();
+    var a=row.querySelector('[data-field="a"]').value.trim();
+    if(n)r.ing.push({n:n,a:a});
+  });
+  var sts=document.querySelectorAll('#sisl_'+idx+' textarea');
+  r.stp=[];
+  sts.forEach(function(ta){var v=ta.value.trim();if(v)r.stp.push(v)});
+}
+
+function _siAddIng(i){_siSaveCard(i);_siRecipes[i].ing.push({n:'',a:''});_siRefreshBody(i)}
+function _siRmIng(i,j){_siSaveCard(i);_siRecipes[i].ing.splice(j,1);_siRefreshBody(i)}
+function _siAddStp(i){_siSaveCard(i);_siRecipes[i].stp.push('');_siRefreshBody(i)}
+function _siRmStp(i,j){_siSaveCard(i);_siRecipes[i].stp.splice(j,1);_siRefreshBody(i)}
+function _siRmRecipe(i){
+  _siRecipes.splice(i,1);
+  _siRenderPreview();
+  if(!_siRecipes.length){document.getElementById('siInputArea').style.display='';document.getElementById('siPreview').style.display='none'}
+}
+function _siRefreshBody(i){var b=document.getElementById('sib'+i);b.innerHTML=_siCardBody(_siRecipes[i],i);b.classList.add('show')}
+
+/* 确认导入 */
+function siConfirmImport(){
+  if(!_siRecipes.length){showT('没有可导入的配方',true);return}
+  _siRecipes.forEach(function(r,i){_siSaveCard(i)});
+  _siRecipes=_siRecipes.filter(function(r){return r.name});
+  if(!_siRecipes.length){showT('没有有效配方',true);return}
+  var existN={};C.forEach(function(c){existN[c.name]=true});
+  var batchS={},dupC=0,bDupC=0;
+  _siRecipes.forEach(function(r){
+    r._dup=!!existN[r.name];r._batchDup=!!batchS[r.name];
+    if(r._dup)dupC++;if(r._batchDup)bDupC++;batchS[r.name]=true;
+  });
+  var hasDup=dupC>0||bDupC>0;
+  var msg='即将导入 '+_siRecipes.length+' 款配方。';
+  if(hasDup){
+    msg+='\n';
+    if(dupC>0)msg+='\n⚠️ '+dupC+' 款与已有配方同名';
+    if(bDupC>0)msg+='\n⚠️ '+bDupC+' 款在导入列表内重复';
+    msg+='\n\n请选择处理策略：';
+  }else{msg+='\n\n无重复冲突，将全部新增。'}
+  document.getElementById('cfTi').textContent='确认导入';
+  document.getElementById('cfTx').textContent=msg;
+  var oldS=document.querySelector('.si-strategy');if(oldS)oldS.remove();
+  if(hasDup){
+    var tmp=document.createElement('div');
+    tmp.innerHTML='<div class="si-strategy"><div class="si-strategy-title">重复处理策略</div><div class="si-strat-opts">'
+      +'<div class="si-strat-opt active" data-s="overwrite" onclick="_siPickStrategy(this)"><div class="si-strat-radio"></div><div><div class="si-strat-label">覆盖</div><div class="si-strat-desc">用导入的配方替换已有同名配方，保留原 id</div></div></div>'
+      +'<div class="si-strat-opt" data-s="skip" onclick="_siPickStrategy(this)"><div class="si-strat-radio"></div><div><div class="si-strat-label">跳过</div><div class="si-strat-desc">保留已有配方不变，仅导入不重复的新配方</div></div></div>'
+      +'<div class="si-strat-opt" data-s="rename" onclick="_siPickStrategy(this)"><div class="si-strat-radio"></div><div><div class="si-strat-label">重命名</div><div class="si-strat-desc">为重复配方自动添加后缀，如「莫吉托 (2)」</div></div></div>'
+      +'</div></div>';
+    document.getElementById('cfTx').parentNode.insertBefore(tmp.firstChild,document.getElementById('cfTx').nextSibling);
+  }
+  _siStrategy='overwrite';
+  var ac=document.getElementById('cfAc');ac.innerHTML='';
+  var nb=document.createElement('button');nb.className='bc';nb.textContent='取消';
+  var yb=document.createElement('button');yb.className='bs';yb.textContent='确认导入';
+  ac.appendChild(nb);ac.appendChild(yb);
+  document.getElementById('cfOv').classList.add('on');
+  nb.onclick=function(){document.getElementById('cfOv').classList.remove('on');var e=document.querySelector('.si-strategy');if(e)e.remove()};
+  yb.onclick=function(){document.getElementById('cfOv').classList.remove('on');var e=document.querySelector('.si-strategy');if(e)e.remove();_siDoImport()};
+}
+
+function _siPickStrategy(el){
+  el.parentNode.querySelectorAll('.si-strat-opt').forEach(function(o){o.classList.remove('active')});
+  el.classList.add('active');
+  _siStrategy=el.dataset.s;
+}
+
+function _siDoImport(){
+  var nameIdx={};C.forEach(function(c,i){nameIdx[c.name]=i});
+  var allN={};C.forEach(function(c){allN[c.name]=true});
+  var added=0,updated=0,skipped=0,renamed=0;
+  _siRecipes.forEach(function(r){
+    if(!r.name)return;
+    if(allN['_b_'+r.name])return;allN['_b_'+r.name]=true;
+    if(nameIdx[r.name]!==undefined){
+      if(_siStrategy==='skip'){skipped++;return}
+      else if(_siStrategy==='rename'){
+        var base=r.name,num=2,nn;
+        do{nn=base+' ('+num+')';num++}while(allN[nn]);
+        r.name=nn;allN[nn]=true;C.push(r);nameIdx[r.name]=C.length-1;renamed++;
+      }else{
+        r.id=C[nameIdx[r.name]].id;C[nameIdx[r.name]]=r;updated++;
+      }
+    }else{C.push(r);nameIdx[r.name]=C.length-1;allN[r.name]=true;added++}
+  });
+  saveCk();refreshAll();
+  var ps=[];
+  if(added>0)ps.push('新增 '+added+' 款');
+  if(updated>0)ps.push('覆盖 '+updated+' 款');
+  if(skipped>0)ps.push('跳过 '+skipped+' 款');
+  if(renamed>0)ps.push('重命名 '+renamed+' 款');
+  showT(ps.length?ps.join('，')+' — 导入完成':'无可导入的新配方');
+  _siRecipes=[];
+  document.getElementById('siInputArea').style.display='';
+  document.getElementById('siPreview').style.display='none';
+  document.getElementById('siO').classList.remove('on');
+}
+
+/* 关闭 */
+document.getElementById('siC').addEventListener('click',function(){document.getElementById('siO').classList.remove('on')});
+
+/* ===== 转盘 ===== */
+var wRot=0,wSpin=false,wData=[],_wheelSz=340;
+function openW(){popWF();updW();document.getElementById('wO').classList.add('on');setTimeout(function(){var stg=document.querySelector('#wO .w-stage');if(!stg)return;_wheelSz=Math.min(340,stg.clientWidth-20,window.innerHeight-400);_wheelSz=Math.max(220,_wheelSz);var cv=document.getElementById('wCv');cv.width=_wheelSz*2;cv.height=_wheelSz*2;cv.style.width=_wheelSz+'px';cv.style.height=_wheelSz+'px';drawW()},60)}
+function popWF(){var cs=document.getElementById('wfCat');cs.innerHTML='<option value="">全部分类</option>';CATS.forEach(function(c){cs.innerHTML+='<option value="'+c.key+'">'+c.emoji+' '+c.name+'</option>'});var bs={};C.forEach(function(c){if(c.base)bs[c.base]=true});var bse=document.getElementById('wfBase');bse.innerHTML='<option value="">全部基酒</option>';Object.keys(bs).forEach(function(b){bse.innerHTML+='<option value="'+b+'">'+b+'</option>'});document.getElementById('wfStr').innerHTML='<option value="">全部烈度</option><option value="light">轻度</option><option value="medium">中度</option><option value="strong">强烈</option>';var ins={};C.forEach(function(c){c.ing.forEach(function(i){ins[i.n]=true})});var ise=document.getElementById('wfIng');ise.innerHTML='<option value="">全部配料</option>';Object.keys(ins).forEach(function(i){ise.innerHTML+='<option value="'+i+'">'+i+'</option>'});var ts={};C.forEach(function(c){(c.tags||[]).forEach(function(t){ts[t]=true})});var tse=document.getElementById('wfTag');tse.innerHTML='<option value="">全部标签</option>';Object.keys(ts).forEach(function(t){tse.innerHTML+='<option value="'+t+'">'+t+'</option>'})}
+function getWF(){var cat=document.getElementById('wfCat').value,base=document.getElementById('wfBase').value,str=document.getElementById('wfStr').value,ing=document.getElementById('wfIng').value,tag=document.getElementById('wfTag').value;return C.filter(function(c){if(cat&&c.cat!==cat)return false;if(base&&c.base!==base)return false;if(str&&c.str!==str)return false;if(ing&&!c.ing.some(function(i){return i.n===ing}))return false;if(tag&&!(c.tags||[]).some(function(t){return t===tag}))return false;return true})}
+function updW(){wData=getWF();wRot=0;drawW();document.getElementById('wCnt').textContent=wData.length+' 款';var res=document.getElementById('wRes');res.className='w-result';res.innerHTML=''}
+function drawW(){var cv=document.getElementById('wCv'),ctx=cv.getContext('2d');var s=_wheelSz,cx=s/2,cy=s/2,r=s/2-16,n=wData.length;ctx.setTransform(2,0,0,2,0,0);ctx.clearRect(0,0,s,s);if(n===0){ctx.fillStyle='#5a554e';ctx.font='15px "Noto Serif SC",serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('没有可选配方',cx,cy);return}var showText=n<=20;var centerR=showText?30:36;for(var di=0;di<60;di++){var da=di*Math.PI*2/60;ctx.beginPath();ctx.arc(cx+Math.cos(da)*(r+10),cy+Math.sin(da)*(r+10),1.2,0,Math.PI*2);ctx.fillStyle=di%3===0?'rgba(201,162,39,.5)':'rgba(201,162,39,.15)';ctx.fill()}ctx.beginPath();ctx.arc(cx,cy,r+4,0,Math.PI*2);ctx.strokeStyle='rgba(201,162,39,.3)';ctx.lineWidth=2;ctx.stroke();ctx.save();ctx.translate(cx,cy);ctx.rotate(wRot);var arc=Math.PI*2/n,cols=['#1e1a16','#171310'];for(var i=0;i<n;i++){var sa=i*arc-Math.PI/2,ea=sa+arc;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,r,sa,ea);ctx.closePath();ctx.fillStyle=cols[i%2];ctx.fill();ctx.beginPath();ctx.arc(0,0,r,sa,ea);ctx.strokeStyle=i%2===0?'rgba(201,162,39,.22)':'rgba(201,162,39,.08)';ctx.lineWidth=2.5;ctx.stroke();ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(sa)*r,Math.sin(sa)*r);ctx.strokeStyle='rgba(201,162,39,.1)';ctx.lineWidth=1;ctx.stroke();if(showText){ctx.save();ctx.rotate(sa+arc/2);var fs=n<=4?20:n<=6?18:n<=8?16:n<=10?14:n<=14?12:n<=20?10:8;ctx.font='600 '+fs+'px "Noto Serif SC",serif';ctx.fillStyle='#f0ece4';ctx.textAlign='right';ctx.textBaseline='middle';var name=wData[i].name;var mc=n<=4?10:n<=6?9:n<=8?8:n<=10?7:n<=14?6:n<=20?4:3;if(name.length>mc)name=name.substring(0,mc)+'...';ctx.fillText(name,r-20,0);ctx.restore()}}ctx.restore();ctx.beginPath();ctx.arc(cx,cy,centerR,0,Math.PI*2);ctx.fillStyle='#151210';ctx.fill();ctx.strokeStyle='rgba(201,162,39,.5)';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#c9a227';ctx.font='bold 14px "DM Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(wSpin?'...':'GO',cx,cy)}
+document.getElementById('wCv').addEventListener('click',function(e){if(wSpin)return;var rect=this.getBoundingClientRect();var x=e.clientX-rect.left,y=e.clientY-rect.top;var cx=rect.width/2,cy=rect.height/2;var dist=Math.sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy));var centerR=(wData.length<=12?30:36)*(rect.width/_wheelSz);if(dist<=centerR)spinW()});
+function spinW(){if(wSpin)return;if(wData.length===0){showT('没有匹配的配方');return}if(wData.length===1){document.getElementById('wO').classList.remove('on');shD(wData[0].id);return}wSpin=true;drawW();var n=wData.length,arc=Math.PI*2/n,pick=Math.floor(Math.random()*n);var targetRem=((-(pick+0.5)*arc)%(Math.PI*2)+Math.PI*4)%(Math.PI*2);var curRem=((wRot%(Math.PI*2))+Math.PI*4)%(Math.PI*2);var delta=((targetRem-curRem)%(Math.PI*2)+Math.PI*4)%(Math.PI*2);var total=(8+Math.floor(Math.random()*10))*Math.PI*2+delta,finalRot=wRot+total;var dur=4000+Math.random()*2000,t0=performance.now(),start=wRot;function anim(t){var p=Math.min((t-t0)/dur,1);wRot=start+total*(1-Math.pow(1-p,4));drawW();if(p<1){requestAnimationFrame(anim)}else{wRot=finalRot;drawW();wSpin=false;drawW();document.getElementById('wPtr').classList.add('bounce');setTimeout(function(){document.getElementById('wPtr').classList.remove('bounce')},300);setTimeout(function(){document.getElementById('wO').classList.remove('on');shD(wData[pick].id)},700)}}requestAnimationFrame(anim)}
+document.getElementById('bW').addEventListener('click',openW);
+document.getElementById('wCC').addEventListener('click',function(){document.getElementById('wO').classList.remove('on')});
+['wfCat','wfBase','wfStr','wfIng','wfTag'].forEach(function(id){document.getElementById(id).addEventListener('change',updW)});
+
+/* ===== 管理下拉 ===== */
+var mgrOpen=false,mgrTimer=null,mgrHeld=false;
+var subEl=document.getElementById('subTrig');var mgrMenu=document.getElementById('mgrMenu');
+function openMgr(){if(mgrOpen)return;mgrOpen=true;subEl.classList.add('active');mgrMenu.classList.add('show')}
+function closeMgr(){mgrOpen=false;mgrHeld=false;subEl.classList.remove('active');mgrMenu.classList.remove('show')}
+function mgrDown(e){if(e.type.indexOf('touch')===0)e.preventDefault();e.stopPropagation();clearTimeout(mgrTimer);mgrHeld=false;subEl.classList.add('pressing');mgrTimer=setTimeout(function(){mgrHeld=true;subEl.classList.remove('pressing');openMgr()},1000)}
+function mgrUp(e){if(e&&e.stopPropagation)e.stopPropagation();clearTimeout(mgrTimer);mgrTimer=null;subEl.classList.remove('pressing')}
+subEl.addEventListener('contextmenu',function(e){e.preventDefault()});
+subEl.addEventListener('click',function(e){if(mgrHeld||mgrOpen){mgrHeld=false;e.preventDefault();e.stopPropagation()}});
+subEl.addEventListener('mousedown',mgrDown);subEl.addEventListener('mouseup',mgrUp);subEl.addEventListener('mouseleave',mgrUp);
+subEl.addEventListener('touchstart',mgrDown,{passive:false});subEl.addEventListener('touchend',mgrUp);subEl.addEventListener('touchcancel',mgrUp);
+document.addEventListener('click',function(e){if(mgrOpen&&!mgrMenu.contains(e.target)&&e.target!==subEl)closeMgr()});
+document.getElementById('bMC').addEventListener('click',function(){openCM();closeMgr()});
+document.getElementById('bMG').addEventListener('click',function(){openGM();closeMgr()});
+document.getElementById('bExp').addEventListener('click',function(){exportAll();closeMgr()});
+document.getElementById('bImp').addEventListener('click',function(){importAll();closeMgr()});
+
+function exportRecipe(id){var c=C.find(function(x){return x.id===id});if(!c)return;var g=GLASSES[c.g]||{},ccn=cn(c.cat),sl=SL[c.str]||'',L=[];L.push('「'+c.name+'」');if(c.nameEn)L.push('  '+c.nameEn);L.push('───────────────────');L.push('分类：'+ccn+'　烈度：'+sl);L.push('杯型：'+(g.n||''));if(c.base)L.push('基酒：'+c.base);L.push('');if(c.desc)L.push(c.desc);L.push('');L.push('【材料】');c.ing.forEach(function(i){L.push('  · '+i.n+'　'+i.a)});L.push('');if(c.stp&&c.stp.length){L.push('【步骤】');c.stp.forEach(function(s,j){L.push('  '+(j+1)+'. '+s)});L.push('')}if(c.tags&&c.tags.length)L.push('标签：'+c.tags.join(' / '));L.push('');L.push('— 来自 Alchemist 鸡尾酒配方');var blob=new Blob([L.join('\n')],{type:'text/plain;charset=utf-8'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=c.name+'.txt';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);showT('已导出：'+c.name)}
+
+refreshAll();
+// ============================================
+// GitHub Gist 云同步
+// ============================================
+
+var GIST_TOKEN = localStorage.getItem('alchemist_gist_token') || '';
+var GIST_ID = localStorage.getItem('alchemist_gist_id') || '';
+var GIST_FILENAME = 'alchemist-data.json';
+var _gistHooked = false;
+
+function setGistToken(token) {
+    GIST_TOKEN = token;
+    localStorage.setItem('alchemist_gist_token', token);
+}
+
+function buildExportData() {
+    return JSON.stringify({
+        version: 2,
+        timestamp: new Date().toISOString(),
+        cocktails: C,
+        categories: CATS,
+        glasses: GLASSES,
+        pantry: PANTRY,
+        ingGroups: CUSTOM_GROUPS,
+        igDefs: getIGDefs(),
+        hiddenIng: getHiddenIng()
+    }, null, 2);
+}
+
+async function createGist() {
+    var res = await fetch('https://api.github.com/gists', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'token ' + GIST_TOKEN,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            description: 'Alchemist Cocktail Data',
+            public: false,
+            files: {
+                [GIST_FILENAME]: { content: buildExportData() }
+            }
+        })
+    });
+    var data = await res.json();
+    GIST_ID = data.id;
+    localStorage.setItem('alchemist_gist_id', GIST_ID);
+    showT('Gist 创建成功，数据已同步到云端');
+}
+
+async function gistSave() {
+    if (!GIST_TOKEN || !GIST_ID) return;
+    try {
+        await fetch('https://api.github.com/gists/' + GIST_ID, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': 'token ' + GIST_TOKEN,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                files: {
+                    [GIST_FILENAME]: { content: buildExportData() }
+                }
+            })
+        });
+    } catch (e) {
+        console.log('Gist 同步失败', e);
+    }
+}
+
+async function gistLoad() {
+    if (!GIST_TOKEN || !GIST_ID) return false;
+    try {
+        var res = await fetch('https://api.github.com/gists/' + GIST_ID, {
+            headers: { 'Authorization': 'token ' + GIST_TOKEN }
+        });
+        var data = await res.json();
+        var content = data.files[GIST_FILENAME].content;
+        var parsed = JSON.parse(content);
+        if (parsed.cocktails && parsed.cocktails.length) {
+            C = parsed.cocktails;
+            if (parsed.categories) CATS = parsed.categories;
+            if (parsed.glasses) GLASSES = parsed.glasses;
+            if (parsed.pantry) PANTRY = parsed.pantry;
+            if (parsed.ingGroups) CUSTOM_GROUPS = parsed.ingGroups;
+            saveCk(); saveCt(); saveG(); savePantry(); saveIngGroups();
+            refreshAll();
+            showT('从云端加载数据成功');
+            return true;
+        }
+    } catch (e) {
+        console.log('Gist 加载失败', e);
+    }
+    return false;
+}
+
+var _gistTimer = null;
+function debounceGistSave() {
+    clearTimeout(_gistTimer);
+    _gistTimer = setTimeout(gistSave, 2000);
+}
+
+function hookGistSync() {
+    if (_gistHooked) return;
+    _gistHooked = true;
+    var o1 = saveCk; saveCk = function () { o1(); debounceGistSave(); };
+    var o2 = saveCt; saveCt = function () { o2(); debounceGistSave(); };
+    var o3 = saveG; saveG = function () { o3(); debounceGistSave(); };
+    var o4 = savePantry; savePantry = function () { o4(); debounceGistSave(); };
+    var o5 = saveIngGroups; saveIngGroups = function () { o5(); debounceGistSave(); };
+}
+
+// 设置界面
+function openGistSettings() {
+    var el = document.getElementById('gistModal');
+    if (el) el.remove();
+    var div = document.createElement('div');
+    div.id = 'gistModal';
+    div.className = 'ov on';
+    div.innerHTML =
+        '<div class="mdl"><div class="mh"><h2>GitHub Gist 云同步</h2>' +
+        '<button class="mc" onclick="document.getElementById(\'gistModal\').remove()">&times;</button></div>' +
+        '<div class="mb">' +
+        '<p style="color:var(--tm);font-size:.86rem;margin-bottom:16px;line-height:1.7">' +
+        '通过 GitHub Gist 实现多设备数据同步。数据保存在你的私人 Gist 中，不会公开。</p>' +
+        '<div class="fg"><label>GitHub Token</label>' +
+        '<input id="gsToken" type="password" value="' + GIST_TOKEN + '" placeholder="粘贴你的 Token" /></div>' +
+        '<div class="fg"><label>Gist ID（首次留空自动创建）</label>' +
+        '<input id="gsId" value="' + GIST_ID + '" placeholder="首次使用留空即可" /></div>' +
+        '<div class="fa">' +
+        '<button class="bc" onclick="document.getElementById(\'gistModal\').remove()">取消</button>' +
+        '<button class="bs" id="gsSaveBtn">保存并同步</button></div></div></div>';
+    document.body.appendChild(div);
+    document.getElementById('gsSaveBtn').addEventListener('click', async function () {
+        var token = document.getElementById('gsToken').value.trim();
+        var id = document.getElementById('gsId').value.trim();
+        if (!token) { showT('请输入 Token'); return; }
+        setGistToken(token);
+        GIST_ID = id;
+        localStorage.setItem('alchemist_gist_id', GIST_ID);
+        if (!GIST_ID) {
+            await createGist();
+        } else {
+            await gistSave();
+            showT('同步成功');
+        }
+        hookGistSync();
+        div.remove();
+        updateGistUI();
+    });
+}
+
+function updateGistUI() {
+    var bar = document.getElementById('pfBar');
+    var old = document.getElementById('gistBar');
+    if (old) old.remove();
+    var div = document.createElement('div');
+    div.id = 'gistBar';
+    div.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 16px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);font-family:var(--fm);font-size:.78rem;color:var(--tm)';
+    if (GIST_TOKEN && GIST_ID) {
+        div.innerHTML =
+            '<span style="color:var(--ok)">◉ 已连接云同步</span>' +
+            '<button class="pf-edit" onclick="gistLoad()" style="font-size:.7rem">拉取最新</button>' +
+            '<button class="pf-edit" onclick="gistSave();showT(\'手动同步完成\')" style="font-size:.7rem">手动推送</button>' +
+            '<button class="pf-reset" onclick="openGistSettings()" style="font-size:.7rem">设置</button>';
+    } else {
+        div.innerHTML =
+            '<span style="color:#bf9f4d">○ 未连接云同步</span>' +
+            '<button class="pf-edit" onclick="openGistSettings()" style="font-size:.7rem">设置同步</button>';
+    }
+    bar.parentNode.insertBefore(div, bar);
+}
+
+// 启动
+async function initGist() {
+    if (GIST_TOKEN && GIST_ID) {
+        hookGistSync();
+        await gistLoad();
+    }
+    updateGistUI();
+}
+
+window.addEventListener('DOMContentLoaded', initGist);
+</script>
+</body>
+</html>

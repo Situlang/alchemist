@@ -517,17 +517,31 @@ function _siHandleFiles(files){
   }
 }
 
+
+/* ===== 自动检测引擎 ===== */
+var _UNITS='ml|cl|dl|l|oz|dash|dashes|drop|滴|片|颗|个|根|块|瓣|吧勺|茶匙|汤匙|杯|份|tsp|tbsp|teaspoon|tablespoon|pony|splash|part|parts|shot|shots|pinch';
+var _QRE=new RegExp('\\d+\\.?\\d*(?:\\s*[-~至]\\s*\\d+\\.?\\d*)?\\s*('+_UNITS+')(?![A-Za-z0-9])','i');
+
+var _VERBS_CN='倒入|加入|搅拌|摇匀|摇动|摇|装饰|放入|捣压|过滤|注入|润湿|混合|冰镇|点燃|挤出|切|磨|撒|淋|浮|调制|轻搅|缓慢|装满|双重过滤|干摇|加冰|放冰|挤油|抹盐|抹糖|沿杯壁|搅拌溶解|取出|铺上|放上|放置|缓缓|将|然后|接着|最后|再|制作|依次|所有|缓慢地|轻轻地';
+var _VERBS_RE=new RegExp('^('+_VERBS_CN+'|muddle|stir|shake|pour|mix|strain|garnish|fill|add|combine|blend|rim|squeeze|top|build|layer|float|flame|chill|serve|swizzle|roll|throw)','i');
+var _VERBS_CONTAINS=new RegExp(_VERBS_CN);
+
 function siParsePaste(){
   var text=document.getElementById('siPaste').value;
   if(!text.trim()){showT('请先粘贴配方文本',true);return}
-  _siProcessText(text,'粘贴内容');
-}
-
-function siClearPaste(){document.getElementById('siPaste').value=''}
-function siClearAll(){
-  _siRecipes=[];
-  document.getElementById('siInputArea').style.display='';
-  document.getElementById('siPreview').style.display='none';
+  try{
+    var result=_siAutoDetect(text);
+    if(!result.recipes.length){showT('未能识别出配方，请检查内容格式',true);return}
+    _siFormat=result.format;
+    _siRecipes=result.recipes;
+    _siRenderPreview();
+    document.getElementById('siInputArea').style.display='none';
+    document.getElementById('siPreview').style.display='';
+    var L={json:'JSON格式',csv:'CSV格式',freeform:'智能解析'};
+    showT('从「粘贴内容」识别出 '+result.recipes.length+' 款配方（'+L[result.format]+'）');
+  }catch(e){
+    showT('解析出错: '+(e.message||e),true);
+  }
 }
 
 function _siProcessText(text,source){
@@ -545,14 +559,6 @@ function _siProcessText(text,source){
     showT('解析出错: '+(e.message||e),true);
   }
 }
-
-/* ===== 自动检测引擎 ===== */
-var _UNITS='ml|cl|dl|l|oz|dash|dashes|drop|滴|片|颗|个|根|块|瓣|吧勺|茶匙|汤匙|杯|份|tsp|tbsp|teaspoon|tablespoon|pony|splash|part|parts|shot|shots|pinch';
-var _QRE=new RegExp('\\d+\\.?\\d*(?:\\s*[-~至]\\s*\\d+\\.?\\d*)?\\s*('+_UNITS+')(?![A-Za-z0-9])','i');
-
-var _VERBS_CN='倒入|加入|搅拌|摇匀|摇动|摇|装饰|放入|捣压|过滤|注入|润湿|混合|冰镇|点燃|挤出|切|磨|撒|淋|浮|调制|轻搅|缓慢|装满|双重过滤|干摇|加冰|放冰|挤油|抹盐|抹糖|沿杯壁|搅拌溶解|取出|铺上|放上|放置|缓缓|将|然后|接着|最后|再|制作|依次|所有|缓慢地|轻轻地';
-var _VERBS_RE=new RegExp('^('+_VERBS_CN+'|muddle|stir|shake|pour|mix|strain|garnish|fill|add|combine|blend|rim|squeeze|top|build|layer|float|flame|chill|serve|swizzle|roll|throw)','i');
-var _VERBS_CONTAINS=new RegExp(_VERBS_CN);
 
 function _siAutoDetect(text){
   text=text.trim().replace(/$$citation:\s*\d+$$/gi,'').replace(/$$\d+$$/g,'');
@@ -668,27 +674,47 @@ function _parseFreeform(text){
 
 function _isRecipeName(line){
   if(!line||line.length<2||line.length>60)return false;
-  /* 排除元数据 */
-  if(/^(分类|类别|烈度|杯型|基酒|标签|步骤|材料|配料)[：:]/i.test(line))return false;
+  if(/^(分类|类别|烈度|杯型|基酒|标签|步骤|材料|配料|描述|说明|简介)[：:]/i.test(line))return false;
   if(/^【/.test(line))return false;
   if(/^\d+[\.\、]/.test(line))return false;
   if(/^[─\-═━]{3,}\s*$/.test(line))return false;
-  /* 排除配料 */
   if(_QRE.test(line))return false;
   if(/适量|少许/.test(line))return false;
-  /* 排除含动作动词的行 */
   if(_VERBS_CONTAINS.test(line))return false;
-  /* 排除含器皿名称的行 */
   if(/杯|壶/.test(line))return false;
-  /* 排除含标点的描述性行 */
   if(line.includes('。'))return false;
   if(line.includes('，')&&line.length>15)return false;
-  /* 必须含文字 */
   var hasCJK=/[\u4e00-\u9fa5]/.test(line);
   var hasLat=/[A-Za-z]{2,}/.test(line);
   if(!hasCJK&&!hasLat)return false;
-  /* 判断为标题 */
-  if(line.indexOf('/')>=0||line.indexOf('／')>=0)return true;
+
+  /* 含斜杠的行：判断是配方名还是元数据 */
+  if(line.indexOf('/')>=0||line.indexOf('／')>=0){
+    var parts=line.split(/[/／]/);
+    var left=parts[0].trim();
+    var right=parts[1]?parts[1].trim():'';
+
+    /* 排除杯型行 */
+    if(/杯|壶|coupe|highball|collins|martini|hurricane|shot|wine|pilsner|mug|zombie|glencairn|rocks|flute|snifter|tumbler|copper|nick\s*&?\s*nora/i.test(line))return false;
+
+    /* 排除强度词 */
+    if(/^(light|medium|strong|淡|中|烈|轻|低|强|高)$/i.test(right))return false;
+
+    /* 排除分类名 */
+    var catWords=['酸酒','经典','高球','马天尼','曼哈顿','菲士','司令','翻转','托蒂','潘趣','提基',
+                  'sour','classic','highball','martini','manhattan','fizz','sling','flip','toddy','punch','tiki'];
+    for(var i=0;i<catWords.length;i++){
+      if(left===catWords[i]||right===catWords[i])return false;
+    }
+
+    /* 排除现有分类名称 */
+    for(var j=0;j<CATS.length;j++){
+      if(left===CATS[j].name)return false;
+    }
+
+    return true;
+  }
+
   if(hasCJK&&hasLat)return true;
   if(hasCJK&&!hasLat&&line.length<=8)return true;
   if(hasLat&&!hasCJK&&/^[A-Z]/.test(line)&&line.length<=40&&!line.includes(':')&&!line.includes('：'))return true;
@@ -697,13 +723,13 @@ function _isRecipeName(line){
 
 function _parseOne(lines){
   var R={id:_genId(),name:'',nameEn:'',g:'old-fashioned',cat:'classic',str:'medium',desc:'',base:'',ing:[],stp:[],tags:[]};
-  var sec='auto',descL=[];
+  var sec='auto',descL=[],nameIdx=-1;
   for(var i=0;i<lines.length;i++){
     var line=lines[i].trim();
     if(!line||line==='。'||line==='.')continue;
     if(/^[─\-═━]{3,}\s*$/.test(line))continue;
 
-    /* 段落标记 【材料】【步骤】 */
+    /* 段落标记 */
     var sm=line.match(/^【\s*(.+?)\s*】/);
     if(sm){
       var sn=sm[1];
@@ -711,8 +737,11 @@ function _parseOne(lines){
       if(/步骤|做法|制作|instructions|steps|directions|method/i.test(sn)){sec='steps';continue}
       continue;
     }
+    /* 不带括号的段落标记 */
+    if(/^(材料|配料|ingredients|materials)[：:]/i.test(line)){sec='ingredients';continue}
+    if(/^(步骤|做法|制作|instructions|steps|directions|method)[：:]/i.test(line)){sec='steps';continue}
 
-    /* 元数据（始终优先检查） */
+    /* 元数据 */
     var mm=line.match(/^(分类|类别|类型|烈度|酒精度|强度|杯型|杯子|基酒|标签|tags|glass|category|strength|base)[：:]\s*(.+)/i);
     if(mm){
       var k=mm[1].toLowerCase(),v=mm[2].trim();
@@ -726,45 +755,51 @@ function _parseOne(lines){
       continue;
     }
 
-    /* 名称（第一条符合条件的行） */
+    /* 名称 */
     if(!R.name){
       var t=_extractName(line);
-      if(t){R.name=t.name;R.nameEn=t.nameEn||'';continue}
+      if(t){R.name=t.name;R.nameEn=t.nameEn||'';nameIdx=i;continue}
+    }
+
+    /* 名称之后紧跟的第一行：可能是杯型 */
+    if(R.name&&nameIdx>=0&&i===nameIdx+1&&!R._gParsed){
+      var gv=_nGlass(line);
+      if(gv&&gv!=='old-fashioned'){R.g=gv;R._gParsed=true;continue}
+    }
+
+    /* 名称之后紧跟的第二行：可能是分类/强度 */
+    if(R.name&&nameIdx>=0&&i===nameIdx+2&&!R._cParsed){
+      if(line.indexOf('/')>=0||line.indexOf('／')>=0){
+        var sp=line.split(/[/／]/);
+        if(sp.length>=2){
+          var cv=_nCat(sp[0].trim()),sv=_nStr(sp[1].trim());
+          if(cv){R.cat=cv;R._cParsed=true;}
+          if(sv){R.str=sv;R._cParsed=true;}
+          if(R._cParsed)continue;
+        }
+      }
     }
 
     /* 有明确标记的 section */
     if(sec==='ingredients'){var ig=_parseIng(line);if(ig){R.ing.push(ig);continue}descL.push(line);continue}
     if(sec==='steps'){var st=_parseStep(line);if(st){R.stp.push(st);continue}descL.push(line);continue}
 
-    /* ===== 自动分类 ===== */
-    /* 1. 数字编号开头 → 步骤 */
-    if(/^\d+[\.\、\)]/.test(line)){
-      var st=_parseStep(line);
-      if(st){R.stp.push(st);continue}
-    }
-    /* 2. 开头是动作动词 → 步骤 */
-    if(_VERBS_RE.test(line)){
-      var st=_parseStep(line);
-      if(st){R.stp.push(st);continue}
-    }
-    /* 3. 结尾是动作动词且无量词 → 步骤 */
+    /* 自动分类 */
+    if(/^\d+[\.\、\)]/.test(line)){var st=_parseStep(line);if(st){R.stp.push(st);continue}}
+    if(_VERBS_RE.test(line)){var st=_parseStep(line);if(st){R.stp.push(st);continue}}
     if(!_QRE.test(line)){
       if(/(倒入|加入|搅拌|摇匀|装饰|放入|捣压|过滤|注入|润湿|混合|冰镇|点燃|挤出|调制|轻搅|缓慢|装满|双重过滤|干摇|加冰|放冰|挤油|抹盐|抹糖|沿杯壁|搅拌溶解|取出|铺上|放上|放置|缓缓)$/.test(line)){
         R.stp.push(line);continue;
       }
     }
-    /* 4. 含器皿指令且无量词 → 步骤 */
     if(!_QRE.test(line)&&/杯|壶/.test(line)&&!/[\u4e00-\u9fa5]{2,8}酒/.test(line)){
       R.stp.push(line);continue;
     }
-    /* 5. 含量词 → 配料 */
     var ig=_parseIng(line);
     if(ig){R.ing.push(ig);continue}
-    /* 6. 其他 → 描述 */
     descL.push(line);
   }
   R.desc=descL.join('\n').replace(/^\s*。\s*$/gm,'').trim();
-  /* 推断基酒 */
   if(!R.base&&R.ing.length>0){
     var sp=/朗姆|rum|威士忌|whiskey|whisky|bourbon|波本|金酒|gin|伏特加|vodka|龙舌兰|tequila|白兰地|brandy|干邑|cognac/i;
     for(var j=0;j<R.ing.length;j++){if(sp.test(R.ing[j].n)){R.base=R.ing[j].n;break}}

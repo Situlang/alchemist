@@ -391,7 +391,30 @@ function saveIGDefs(){localStorage.setItem(SK_IGG,JSON.stringify(_igDefs))}
 var HIDDEN_ING_KEY='ca_hidden_ing';
 function getHiddenIng(){var d=localStorage.getItem(HIDDEN_ING_KEY);if(d){try{return JSON.parse(d)}catch(e){}}return[]}
 function saveHiddenIng(h){localStorage.setItem(HIDDEN_ING_KEY,JSON.stringify(h))}
-function getIngGroup(n){return CUSTOM_GROUPS[n]||ING_TO_GROUP[n]||'other'}
+function getIngGroup(n){
+  /* 优先：用户手动分组 */
+  if(CUSTOM_GROUPS[n])return CUSTOM_GROUPS[n];
+  /* 其次：内置映射表 */
+  if(ING_TO_GROUP[n])return ING_TO_GROUP[n];
+  /* 自动：关键词匹配 */
+  var ln=n.toLowerCase();
+  /* 烈酒 */
+  if(/朗姆|rum|威士忌|whiskey|whisky|bourbon|波本|金酒|gin|伏特加|vodka|龙舌兰|tequila|白兰地|brandy|干邑|cognac|利口酒|利口|甜酒/.test(n))return'spirit';
+  /* 利口酒 */
+  if(/君度|cointreau|杏仁|amaretto|咖啡利口|kahlua|百利甜|baileys|查特|chartreuse|廊酒|benedictine|杜林标|drambuie|加利安奴|galliano|利莱|lillet|金巴利|campari|阿佩罗|aperol|樱桃酒|kirsch|黑樱桃|maraschino|紫罗兰|violet|可可|cacao|薄荷酒|creme de menthe|苦艾|absinthe|味美思|vermouth/.test(n))return'liqueur';
+  /* 糖浆 */
+  if(/糖浆|syrup|蜂蜜|honey|红石榴|grenadine|法勒南|falernum/.test(n))return'syrup';
+  /* 水果 */
+  if(/汁$|juice|青柠|lime|柠檬|lemon|西柚|grapefruit|橙汁|orange|蔓越莓|cranberry|菠萝|pineapple|椰浆|coconut|芒果|mango|百香果|passion/.test(n))return'fruit';
+  /* 调料/混合物 */
+  if(/苏打|soda|汤力|tonic|姜汁啤酒|ginger beer|姜汁|ginger|可乐|coke|cola|气泡|sparkling|水$|奶|milk|奶油|cream|蛋清|egg/.test(n))return'mixer';
+  /* 装饰 */
+  if(/叶$|leaf|mint|薄荷|橙皮|柠檬皮|lime peel|樱桃|cherry|橄榄|olive|盐|salt|糖$|sugar|方糖|肉桂|cinnamon|豆蔻|nutmeg/.test(n))return'garnish';
+  /* 冰 */
+  if(/冰|ice/.test(n))return'ice';
+  /* 兜底 */
+  return'other';
+}
 function cbk(k){for(var i=0;i<CATS.length;i++){if(CATS[i].key===k)return CATS[i]}return null}
 function cn(k){var c=cbk(k);return c?c.name:k}
 function ce(k){var c=cbk(k);return c?c.emoji:'🍹'}
@@ -454,7 +477,8 @@ function cD(){document.getElementById('dO').classList.remove('on')}
 function cMO(){document.getElementById('mO').classList.remove('on')}
 document.getElementById('fCt').addEventListener('change',function(e){var ci=document.getElementById('fCc');ci.style.display=e.target.value==='__c'?'block':'none';if(e.target.value==='__c')ci.focus()});
 
-document.getElementById('frm').addEventListener('submit',function(e){e.preventDefault();var id=document.getElementById('fId').value,cat=document.getElementById('fCt').value;if(cat==='__c')cat=document.getElementById('fCc').value.trim();if(!cat)cat=CATS[0]?CATS[0].key:'other';var ing=[];document.querySelectorAll('#il .ir').forEach(function(r){var ins=r.querySelectorAll('input'),n=ins[0].value.trim(),a=ins[1].value.trim();if(n)ing.push({n:n,a:a})});var stp=[];document.querySelectorAll('#sl .sr textarea').forEach(function(t){var v=t.value.trim();if(v)stp.push(v)});var tags=[];document.querySelectorAll('#tgGrid .tg-item.on').forEach(function(el){tags.push(el.dataset.t)});var nw=document.getElementById('fTgNew').value.trim();if(nw&&tags.indexOf(nw)<0)tags.push(nw);var newName=document.getElementById('fNm').value.trim();var dup=C.some(function(c){return c.name===newName&&c.id!==id});if(dup){showT('已存在同名配方「'+newName+'」');return}var oldAll=getAllIngredients();var ck={id:id||'c'+Date.now(),name:document.getElementById('fNm').value.trim(),nameEn:document.getElementById('fNe').value.trim(),g:document.getElementById('fG').value||Object.keys(GLASSES)[0]||'',cat:cat,str:document.getElementById('fSt').value,desc:document.getElementById('fDc').value.trim(),base:document.getElementById('fBs').value.trim(),ing:ing,stp:stp,tags:tags};if(id){var idx=C.findIndex(function(c){return c.id===id});if(idx!==-1)C[idx]=ck}else C.push(ck);saveCk();var newAll=getAllIngredients();var newOnes=Object.keys(newAll).filter(function(k){return !oldAll[k]});if(newOnes.length>0){setTimeout(function(){showT('新材料已加入材料柜: '+newOnes.join('、'))},300)}cE();refreshAll();showT(id?'配方已更新':'新配方已添加')});
+document.getElementById('frm').addEventListener('submit',function(e){e.preventDefault();var id=document.getElementById('fId').value,cat=document.getElementById('fCt').value;if(cat==='__c')cat=document.getElementById('fCc').value.trim();if(!cat)cat=CATS[0]?CATS[0].key:'other';var ing=[];document.querySelectorAll('#il .ir').forEach(function(r){var ins=r.querySelectorAll('input'),n=ins[0].value.trim(),a=ins[1].value.trim();if(n)ing.push({n:n,a:a})});var stp=[];document.querySelectorAll('#sl .sr textarea').forEach(function(t){var v=t.value.trim();if(v)stp.push(v)});var tags=[];document.querySelectorAll('#tgGrid .tg-item.on').forEach(function(el){tags.push(el.dataset.t)});var nw=document.getElementById('fTgNew').value.trim();if(nw&&tags.indexOf(nw)<0)tags.push(nw);var newName=document.getElementById('fNm').value.trim();var dup=C.some(function(c){return c.name===newName&&c.id!==id});if(dup){showT('已存在同名配方「'+newName+'」');return}var newEn=document.getElementById('fNe').value.trim();
+if(newEn){var dupEn=C.some(function(c){return c.nameEn&&c.nameEn.toLowerCase()===newEn.toLowerCase()&&c.id!==id});if(dupEn){showT('已存在同名英文配方「'+newEn+'」');return}}var oldAll=getAllIngredients();var ck={id:id||'c'+Date.now(),name:document.getElementById('fNm').value.trim(),nameEn:document.getElementById('fNe').value.trim(),g:document.getElementById('fG').value||Object.keys(GLASSES)[0]||'',cat:cat,str:document.getElementById('fSt').value,desc:document.getElementById('fDc').value.trim(),base:document.getElementById('fBs').value.trim(),ing:ing,stp:stp,tags:tags};if(id){var idx=C.findIndex(function(c){return c.id===id});if(idx!==-1)C[idx]=ck}else C.push(ck);saveCk();var newAll=getAllIngredients();var newOnes=Object.keys(newAll).filter(function(k){return !oldAll[k]});if(newOnes.length>0){setTimeout(function(){showT('新材料已加入材料柜: '+newOnes.join('、'))},300)}cE();refreshAll();showT(id?'配方已更新':'新配方已添加')});
 
 function delCk(id){var c=C.find(function(x){return x.id===id});showCfm('删除配方','确定删除「'+(c?c.name:'')+'」？',function(){C=C.filter(function(c){return c.id!==id});saveCk();refreshAll();showT('已删除')})}
 function showCfm(title,msg,onOk){document.getElementById('cfTi').textContent=title;document.getElementById('cfTx').textContent=msg;var ac=document.getElementById('cfAc');ac.innerHTML='';var yb=document.createElement('button');yb.className='bs';yb.textContent='确认';yb.style.background='var(--dg)';var nb=document.createElement('button');nb.className='bc';nb.textContent='取消';ac.appendChild(nb);ac.appendChild(yb);document.getElementById('cfOv').classList.add('on');yb.addEventListener('click',function(){onOk();document.getElementById('cfOv').classList.remove('on')});nb.addEventListener('click',function(){document.getElementById('cfOv').classList.remove('on')})}

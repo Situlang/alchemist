@@ -138,9 +138,8 @@ h1 span{color:var(--ac)}
 .search-clear.show{display:flex}
 .search-clear:hover{color:var(--ac);background:var(--s2)}
 /* 转盘按钮 */
-.wheel-trigger{display:flex;align-items:center;gap:5px;padding:11px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);color:var(--tm);font-family:var(--fb);font-size:.82rem;cursor:pointer;white-space:nowrap;transition:all .25s;flex-shrink:0}
+.wheel-trigger{display:flex;align-items:center;gap:5px;padding:11px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);color:var(--tm);font-family:var(--fb);font-size:.82rem;cursor:pointer;white-space:nowrap;transition:all .25s;flex-shrink:0;height:44px}
 .wheel-trigger:hover{border-color:var(--ac);color:var(--ac);background:var(--s2)}
-.wheel-trigger:active{transform:scale(.97)}
 .wheel-trigger svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 
 /* 转盘弹窗 */
@@ -551,103 +550,86 @@ var GC={sk:'rgba(201,162,39,.5)',fk:'rgba(201,162,39,.03)',lk:'rgba(201,162,39,.
 var wRot=0,wSpin=false,wData=[],_wheelSz=300;
 
 function openWheel(){
-    popWheelFilters();
-    updateWheelData();
-    document.getElementById('wheelOv').classList.add('on');
-    setTimeout(function(){
-        var stg=document.querySelector('#wheelOv .wheel-stage');
-        if(!stg)stg=document.querySelector('#wheelOv .w-stage');
-        if(stg){_wheelSz=Math.min(340,stg.clientWidth-20,window.innerHeight-400);_wheelSz=Math.max(200,_wheelSz)}
-        else{_wheelSz=300}
-        var cv=document.getElementById('wCv');
-        cv.width=_wheelSz*2;cv.height=_wheelSz*2;
-        cv.style.width=_wheelSz+'px';cv.style.height=_wheelSz+'px';
-        drawWheel();
-    },80);
+  popWheelFilters();
+  updateWheelData();
+  document.getElementById('wheelOv').classList.add('on');
+  setTimeout(function(){
+    _wheelSz=300;
+    var cv=document.getElementById('wCv');
+    cv.width=_wheelSz*2;cv.height=_wheelSz*2;
+    cv.style.width=_wheelSz+'px';cv.style.height=_wheelSz+'px';
+    drawWheel();
+  },80);
 }
-
 function closeWheel(){document.getElementById('wheelOv').classList.remove('on')}
-
 document.getElementById('wheelTrigger').addEventListener('click',openWheel);
 document.getElementById('wheelClose').addEventListener('click',closeWheel);
 document.getElementById('wheelOv').addEventListener('click',function(e){if(e.target===this)closeWheel()});
-
 function popWheelFilters(){
-    var cs=document.getElementById('wfCat');
-    cs.innerHTML='<option value="">全部分类</option>';
-    var used={};
-    C.forEach(function(c){used[c.cat]=true});
-    CATS.forEach(function(c){
-        if(used[c.key])cs.innerHTML+='<option value="'+c.key+'">'+c.emoji+' '+c.name+'</option>';
-    });
-    cs.onchange=function(){updateWheelData();drawWheel();document.getElementById('wRes').className='w-result';document.getElementById('wRes').innerHTML=''};
-
-    var ss=document.getElementById('wfStr');
-    ss.innerHTML='<option value="">全部烈度</option><option value="light">轻度</option><option value="medium">中度</option><option value="strong">强烈</option>';
-    ss.onchange=function(){updateWheelData();drawWheel();document.getElementById('wRes').className='w-result';document.getElementById('wRes').innerHTML=''};
+  var cs=document.getElementById('wfCat');
+  cs.innerHTML='<option value="">全部分类</option>';
+  var used={};
+  C.forEach(function(c){used[c.cat]=true});
+  CATS.forEach(function(c){if(used[c.key])cs.innerHTML+='<option value="'+c.key+'">'+c.emoji+' '+c.name+'</option>'});
+  cs.onchange=function(){updateWheelData();drawWheel();document.getElementById('wRes').className='w-result';document.getElementById('wRes').innerHTML=''};
+  var ss=document.getElementById('wfStr');
+  ss.innerHTML='<option value="">全部烈度</option><option value="light">轻度</option><option value="medium">中度</option><option value="strong">强烈</option>';
+  ss.onchange=function(){updateWheelData();drawWheel();document.getElementById('wRes').className='w-result';document.getElementById('wRes').innerHTML=''};
 }
-
 function updateWheelData(){
-    var cat=document.getElementById('wfCat').value;
-    var str=document.getElementById('wfStr').value;
-    wData=C.filter(function(c){
-        if(cat&&c.cat!==cat)return false;
-        if(str&&c.str!==str)return false;
-        return true;
-    });
-    document.getElementById('wCnt').textContent=wData.length+' 款';
-    document.getElementById('wSpin').disabled=wData.length<2;
+  var cat=document.getElementById('wfCat').value;
+  var str=document.getElementById('wfStr').value;
+  wData=C.filter(function(c){
+    if(cat&&c.cat!==cat)return false;
+    if(str&&c.str!==str)return false;
+    return true;
+  });
+  document.getElementById('wCnt').textContent=wData.length+' 款';
+  document.getElementById('wSpin').disabled=wData.length<2;
 }
-
-    var n=wData.length;
-    var sliceAngle=Math.PI*2/n;
-    var showText=n<=12;
-    var fontSize=n<=8?20:n<=12?14:0;
-
-    for(var i=0;i<n;i++){
-        var startAngle=i*sliceAngle-Math.PI/2+wRot;
-        var endAngle=startAngle+sliceAngle;
-
-        ctx.beginPath();ctx.moveTo(cx,cy);
-        ctx.arc(cx,cy,r,startAngle,endAngle);ctx.closePath();
-        ctx.fillStyle=i%2===0?GC.fk:GC.bf;ctx.fill();
-        ctx.strokeStyle=GC.sk;ctx.lineWidth=1.5;ctx.stroke();
-
-        if(showText){
-            ctx.save();ctx.translate(cx,cy);
-            var midAngle=startAngle+sliceAngle/2;
-            ctx.rotate(midAngle);
-            ctx.fillStyle='#f0ece4';
-            ctx.font='bold '+fontSize+'px "Noto Serif SC"';
-            ctx.textAlign='center';ctx.textBaseline='middle';
-            var name=wData[i].name;
-            var maxLen=n<=8?6:n<=12?4:3;
-            if(name.length>maxLen)name=name.slice(0,maxLen)+'…';
-            ctx.fillText(name,r*0.55,0);
-            ctx.restore();
-        }
+function drawWheel(){
+  var cv=document.getElementById('wCv');
+  var ctx=cv.getContext('2d');
+  var cx=cv.width/2,cy=cv.height/2,r=cx-8;
+  ctx.clearRect(0,0,cv.width,cv.height);
+  if(!wData.length){
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.fillStyle=GC.fk;ctx.fill();
+    ctx.strokeStyle=GC.bk;ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle=GC.dk;ctx.font='24px "Noto Serif SC"';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('无数据',cx,cy);return;
+  }
+  var n=wData.length;
+  var sliceAngle=Math.PI*2/n;
+  var showText=n<=12;
+  var fontSize=n<=8?20:n<=12?14:0;
+  for(var i=0;i<n;i++){
+    var startAngle=i*sliceAngle-Math.PI/2+wRot;
+    var endAngle=startAngle+sliceAngle;
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,startAngle,endAngle);ctx.closePath();
+    ctx.fillStyle=i%2===0?GC.fk:GC.bf;ctx.fill();
+    ctx.strokeStyle=GC.sk;ctx.lineWidth=1.5;ctx.stroke();
+    if(showText){
+      ctx.save();ctx.translate(cx,cy);
+      var midAngle=startAngle+sliceAngle/2;ctx.rotate(midAngle);
+      ctx.fillStyle='#f0ece4';
+      ctx.font='bold '+fontSize+'px "Noto Serif SC"';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      var name=wData[i].name;
+      var maxLen=n<=8?6:n<=12?4:3;
+      if(name.length>maxLen)name=name.slice(0,maxLen)+'…';
+      ctx.fillText(name,r*0.55,0);ctx.restore();
     }
-
-    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-    ctx.strokeStyle=GC.sk;ctx.lineWidth=2.5;ctx.stroke();
-
-    ctx.beginPath();ctx.arc(cx,cy,18,0,Math.PI*2);
-    ctx.fillStyle='#151210';ctx.fill();
-    ctx.strokeStyle=GC.sk;ctx.lineWidth=2;ctx.stroke();
-    ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);
-    ctx.fillStyle=GC.sk;ctx.fill();
-}
-
-    /* 外圈 */
-    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-    ctx.strokeStyle=GC.sk;ctx.lineWidth=2.5;ctx.stroke();
-
-    /* 中心 */
-    ctx.beginPath();ctx.arc(cx,cy,18,0,Math.PI*2);
-    ctx.fillStyle='#151210';ctx.fill();
-    ctx.strokeStyle=GC.sk;ctx.lineWidth=2;ctx.stroke();
-    ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);
-    ctx.fillStyle=GC.sk;ctx.fill();
+  }
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.strokeStyle=GC.sk;ctx.lineWidth=2.5;ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,18,0,Math.PI*2);
+  ctx.fillStyle='#151210';ctx.fill();
+  ctx.strokeStyle=GC.sk;ctx.lineWidth=2;ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);
+  ctx.fillStyle=GC.sk;ctx.fill();
 }
 
 document.getElementById('wSpin').addEventListener('click',function(){

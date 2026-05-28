@@ -159,16 +159,16 @@ h1 span{color:var(--ac)}
 .w-filters select:focus{border-color:var(--ac)}
 
 /* 转盘 */
-.w-stage{display:flex;flex-direction:column;align-items:center;position:relative;padding-top:28px;margin-bottom:8px}
-.w-ptr{position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:5;width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid var(--ac);filter:drop-shadow(0 3px 8px rgba(201,162,39,.45));transition:transform .3s}
+.w-stage{display:flex;align-items:center;justify-content:center;position:relative;width:340px;height:340px;margin:0 auto 8px}
+.w-ptr{position:absolute;top:-22px;left:50%;transform:translateX(-50%);z-index:5;width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid var(--ac);filter:drop-shadow(0 3px 8px rgba(201,162,39,.45));transition:transform .3s}
 .w-ptr.bounce{animation:pBnc .45s ease}
 @keyframes pBnc{0%{transform:translateX(-50%) translateY(0)}30%{transform:translateX(-50%) translateY(-10px)}60%{transform:translateX(-50%) translateY(3px)}100%{transform:translateX(-50%) translateY(0)}}
-.w-cv{display:block;border-radius:50%;box-shadow:0 0 50px rgba(0,0,0,.6),0 0 0 2px rgba(201,162,39,.12);cursor:pointer}
+.w-cv{display:block;border-radius:50%;box-shadow:0 0 50px rgba(0,0,0,.6),0 0 0 2px rgba(201,162,39,.12)}
 .w-info{text-align:center;margin-bottom:14px}
 .w-cnt{font-family:var(--fm);font-size:.7rem;color:var(--td)}
 
 /* 旋转按钮 */
-.w-spin{position:absolute;left:50%;top:calc(50% + 14px);transform:translate(-50%,-50%);width:72px;height:72px;border-radius:50%;background:var(--sf);border:2px solid var(--ac);color:var(--ac);font-family:var(--fd);font-weight:700;font-size:.78rem;cursor:pointer;transition:all .25s;z-index:10;letter-spacing:.05em;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(0,0,0,.5)}
+.w-spin{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:80px;height:80px;border-radius:50%;background:var(--sf);border:2px solid var(--ac);color:var(--ac);font-family:var(--fd);font-weight:700;font-size:.82rem;cursor:pointer;transition:all .25s;z-index:10;letter-spacing:.05em;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(0,0,0,.5)}
 .w-spin:hover:not(:disabled){background:var(--ac);color:var(--bg);box-shadow:0 0 30px rgba(201,162,39,.5)}
 .w-spin:disabled{opacity:.45;cursor:not-allowed}
 .w-spin:active:not(:disabled){transform:translate(-50%,-50%) scale(.92)}
@@ -257,13 +257,13 @@ h1 span{color:var(--ac)}
         <select id="wfCat"></select>
         <select id="wfStr"></select>
       </div>
-<div class="w-stage">
-  <div class="w-ptr" id="wPtr"></div>
-  <canvas id="wCv" class="w-cv" width="340" height="340"></canvas>
-  <button class="w-spin" id="wSpin">转一下</button>
-</div>
-<div class="w-info"><span class="w-cnt" id="wCnt"></span></div>
-<div class="w-result" id="wRes"></div>
+      <div class="w-stage">
+        <div class="w-ptr" id="wPtr"></div>
+        <canvas id="wCv" class="w-cv" width="680" height="680"></canvas>
+        <button class="w-spin" id="wSpin">转一下</button>
+      </div>
+      <div class="w-info"><span class="w-cnt" id="wCnt"></span></div>
+      <div class="w-result" id="wRes"></div>
     </div>
   </div>
 </div>
@@ -554,10 +554,9 @@ function openWheel(){
   updateWheelData();
   document.getElementById('wheelOv').classList.add('on');
   setTimeout(function(){
-    _wheelSz=300;
     var cv=document.getElementById('wCv');
-    cv.width=_wheelSz*2;cv.height=_wheelSz*2;
-    cv.style.width=_wheelSz+'px';cv.style.height=_wheelSz+'px';
+    cv.style.width='340px';
+    cv.style.height='340px';
     drawWheel();
   },80);
 }

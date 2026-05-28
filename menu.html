@@ -512,11 +512,7 @@ function showOrderList(){
       var price=PRICES[id]||0;
       if(price)total+=price;
       return '<li class="order-item">'+
-        '<span class="order-item-name">'+c.name+'<small>'+(c.nameEn||'')+'</small></span>'+var price=PRICES[id]||0;
-      if(price)total+=price;
-      return '<li class="order-item">'+
         '<span class="order-item-name">'+c.name+'<small>'+(c.nameEn||'')+'</small></span>'+
-        (price?'<span class="order-item-price">¥'+price+'</span>':'')+
         (price?'<span class="order-item-price">¥'+price+'</span>':'')+
         '<button class="order-item-remove" data-id="'+id+'">&times;</button>'+
       '</li>';

@@ -211,6 +211,7 @@ var CATS = [];
 var GLASSES = {};
 var orders = [];
 var cocktailsMap = {};
+var PRICES = {};
 var activeFilter = 'pending';
 var _lastOrderCount = 0;
 var _refreshTimer = null;
@@ -255,29 +256,27 @@ async function loadData() {
 }
 
 /* ===== 从 Gist 加载订单 ===== */
-async function refreshOrders() {
-  if (!GIST_TOKEN || !GIST_ID) return;
-  try {
-    var res = await fetch('https://api.github.com/gists/' + GIST_ID, {
-      headers: { 'Authorization': 'token ' + GIST_TOKEN }
+async function refreshOrders(){
+  if(!GIST_TOKEN||!GIST_ID)return;
+  try{
+    var res=await fetch('https://api.github.com/gists/'+GIST_ID,{
+      headers:{'Authorization':'token '+GIST_TOKEN}
     });
-    if (!res.ok) return;
-    var data = await res.json();
-    var content = data.files['alchemist-data.json'].content;
-    var parsed = JSON.parse(content);
-    orders = parsed.orders || [];
-
-    /* 检测新订单 */
-    var pendingCount = orders.filter(function(o) { return o.status === 'pending'; }).length;
-    if (pendingCount > _lastOrderCount && _lastOrderCount > 0) {
-      showToast('有新订单！');
-      playSound();
+    if(!res.ok)return;
+    var data=await res.json();
+    var ordersFile=data.files['alchemist-orders.json'];
+    orders=[];
+    if(ordersFile){try{orders=JSON.parse(ordersFile.content)}catch(e){}}
+    var pf=data.files['alchemist-prices.json'];
+    if(pf){try{PRICES=JSON.parse(pf.content)}catch(e){}}
+    var pendingCount=orders.filter(function(o){return o.status==='pending'}).length;
+    if(pendingCount>_lastOrderCount&&_lastOrderCount>0){
+      showToast('有新订单！');playSound();
     }
-    _lastOrderCount = pendingCount;
-
+    _lastOrderCount=pendingCount;
     updateStats();
     renderOrders();
-  } catch (e) { console.log('刷新失败', e); }
+  }catch(e){console.log('刷新失败',e);}
 }
 
 /* ===== 自动刷新 ===== */
@@ -326,10 +325,17 @@ function renderOrders() {
     var isNew = o.status === 'pending' && o._new;
     var itemsHtml = o.items.map(function(item) {
       var c = cocktailsMap[item.id];
+var itemPrice=PRICES[item.id];
+return '<li class="order-item">' +
+    '<span class="order-item-dot"></span>' +
+    '<span class="order-item-name">' + item.name +
+        (item.nameEn ? '<span class="order-item-en"> ' + item.nameEn + '</span>' : '') +
+      var itemPrice=PRICES[item.id];
       return '<li class="order-item">' +
         '<span class="order-item-dot"></span>' +
         '<span class="order-item-name">' + item.name +
         (item.nameEn ? '<span class="order-item-en"> ' + item.nameEn + '</span>' : '') +
+        (itemPrice?'<span style="font-family:var(--fm);font-size:.7rem;color:var(--ac);margin-left:6px">¥'+itemPrice+'</span>':'') +
         '</span>' +
         '<button class="act-btn" style="padding:3px 10px;font-size:.66rem" onclick="showRecipe(\'' + item.id + '\')">配方</button>' +
         '</li>';
@@ -414,23 +420,15 @@ async function removeOrder(id) {
 }
 
 /* ===== 保存订单到 Gist ===== */
-async function saveOrders() {
-  if (!GIST_TOKEN || !GIST_ID) return;
-  try {
-    var res = await fetch('https://api.github.com/gists/' + GIST_ID, {
-      headers: { 'Authorization': 'token ' + GIST_TOKEN }
+async function saveOrders(){
+  if(!GIST_TOKEN||!GIST_ID)return;
+  try{
+    await fetch('https://api.github.com/gists/'+GIST_ID,{
+      method:'PATCH',
+      headers:{'Authorization':'token '+GIST_TOKEN,'Content-Type':'application/json'},
+      body:JSON.stringify({files:{'alchemist-orders.json':{content:JSON.stringify(orders,null,2)}}})
     });
-    var gistData = await res.json();
-    var content = gistData.files['alchemist-data.json'].content;
-    var parsed = JSON.parse(content);
-    parsed.orders = orders;
-
-    await fetch('https://api.github.com/gists/' + GIST_ID, {
-      method: 'PATCH',
-      headers: { 'Authorization': 'token ' + GIST_TOKEN, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ files: { 'alchemist-data.json': { content: JSON.stringify(parsed, null, 2) } } })
-    });
-  } catch (e) { console.log('保存失败', e); }
+  }catch(e){console.log('保存失败',e);}
 }
 
 /* ===== 查看配方详情 ===== */

@@ -185,6 +185,18 @@ h1 span{color:var(--ac)}
 .wr-act{padding:8px 22px;background:transparent;border:1px solid var(--ac);border-radius:var(--r);color:var(--ac);font-family:var(--fb);font-size:.84rem;cursor:pointer;transition:all .2s}
 .wr-act:hover{background:var(--ac);color:var(--bg)}
 
+.card-price{font-family:var(--fm);font-size:.82rem;color:var(--ac);text-align:center;margin-bottom:12px}
+.card-price span{font-size:1.1rem;font-weight:400}
+.order-total{font-family:var(--fm);font-size:.82rem;color:var(--tm)}
+.order-total .total-price{color:var(--ac);font-size:1rem}
+.order-item-price{font-family:var(--fm);font-size:.76rem;color:var(--ac);white-space:nowrap}
+.order-total-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;margin-top:4px;border-top:2px solid var(--ac)}
+.order-total-label{font-family:var(--fd);font-size:.92rem;font-weight:600}
+.order-total-amount{font-family:var(--fm);font-size:1.2rem;color:var(--ac)}
+.price-set{display:flex;align-items:center;gap:8px;position:absolute;right:10px;top:50%;transform:translateY(-50%)}
+.price-set input{width:60px;padding:4px 6px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);color:var(--ac);font-family:var(--fm);font-size:.78rem;text-align:center;outline:none}
+.price-set input:focus{border-color:var(--ac)}
+
 </style>
 </head>
 <body>
@@ -213,7 +225,7 @@ h1 span{color:var(--ac)}
 <!-- 底部点单栏 -->
 <div class="bottom-bar" id="bottomBar">
   <div class="bottom-inner">
-    <span class="order-count">已选 <strong id="orderNum">0</strong> 款</span>
+    <div class="order-total">已选 <strong id="orderNum">0</strong> 款 · 总价 <strong class="total-price" id="orderTotal" style="display:none">¥0</strong></div>
     <button class="submit-btn" onclick="showOrderList()">查看订单</button>
   </div>
 </div>
@@ -275,6 +287,7 @@ var C=[];
 var CATS=[];
 var SL={light:'轻度 Light',medium:'中度 Medium',strong:'强烈 Strong'};
 var orders=[];
+var PRICES={};
 var activeFilter='all';
 var GIST_TOKEN=localStorage.getItem('alchemist_gist_token')||'';
 var GIST_ID=localStorage.getItem('alchemist_gist_id')||'';
@@ -283,6 +296,7 @@ var GIST_ID=localStorage.getItem('alchemist_gist_id')||'';
 async function init(){
   var loaded=await loadFromGist();
   if(!loaded){showToast('无法加载菜单数据，请刷新重试');return}
+  await loadPrices();
   renderFilters();
   renderMenu();
 }
@@ -317,6 +331,29 @@ async function loadFromGist(){
     }
   }catch(e){console.log(e)}
   return false;
+}
+
+async function loadPrices(){
+  if(!GIST_TOKEN||!GIST_ID)return;
+  try{
+    var res=await fetch('https://api.github.com/gists/'+GIST_ID,{
+      headers:{'Authorization':'token '+GIST_TOKEN}
+    });
+    var data=await res.json();
+    var pf=data.files['alchemist-prices.json'];
+    if(pf){PRICES=JSON.parse(pf.content)}
+  }catch(e){console.log(e)}
+}
+
+async function savePrices(){
+  if(!GIST_TOKEN||!GIST_ID)return;
+  try{
+    await fetch('https://api.github.com/gists/'+GIST_ID,{
+      method:'PATCH',
+      headers:{'Authorization':'token '+GIST_TOKEN,'Content-Type':'application/json'},
+      body:JSON.stringify({files:{'alchemist-prices.json':{content:JSON.stringify(PRICES,null,2)}}})
+    });
+  }catch(e){console.log('价格保存失败',e)}
 }
 
 /* ===== 渲染分类筛选 ===== */
@@ -379,9 +416,12 @@ function renderMenu(){
         (glassLabel?'<span class="badge glass">'+glassLabel+'</span>':'')+
       '</div>'+
       '<div class="card-name">'+c.name+'</div>'+
-      '<div class="card-en">'+(c.nameEn||'')+'</div>'+
-      '<div class="card-desc">'+(c.desc||'')+'</div>'+
-      '<button class="order-btn'+(ordered?' ordered':'')+'" data-id="'+c.id+'">'+(ordered?'已选择':'点单')+'</button>'+
+'<div class="card-en">'+(c.nameEn||'')+'</div>'+
+(PRICES[c.id]?'<div class="card-price">¥ <span>'+PRICES[c.id]+'</span></div>':'')+
+'<div class="card-desc">'+(c.desc||'')+'</div>'+
+      '<button class="order-btn'+(ordered?' ordered':'')+'" data-id="'+c.id+'">'+(ordered?'已选择':'点单')+'</button>'+'<div style="display:flex;align-items:center;gap:6px;margin-top:8px;justify-content:center">'+
+(PRICES[c.id]?'<span style="font-family:var(--fm);font-size:.68rem;color:var(--td)">长按卡片设置价格</span>':'')+
+'</div>'+
     '</div>';
   }).join('');
 
@@ -391,6 +431,34 @@ function renderMenu(){
       toggleOrder(btn.dataset.id);
     });
   });
+  gr.querySelectorAll('.card').forEach(function(card){
+    var timer=null;
+    card.addEventListener('touchstart',function(){timer=setTimeout(function(){editPrice(card.dataset.id)},600)});
+    card.addEventListener('touchend',function(){clearTimeout(timer)});
+    card.addEventListener('touchmove',function(){clearTimeout(timer)});
+    card.addEventListener('contextmenu',function(e){
+      e.preventDefault();
+      editPrice(card.dataset.id);
+    });
+  });
+}
+
+function editPrice(id){
+  var c=C.find(function(x){return x.id===id});
+  if(!c)return;
+  var current=PRICES[id]||'';
+  var price=prompt(c.name+' 的价格（元），留空取消：',current);
+  if(price===null)return;
+  price=price.trim();
+  if(price===''){delete PRICES[id]}
+  else{
+    var num=parseFloat(price);
+    if(isNaN(num)||num<0){showToast('请输入有效价格');return}
+    PRICES[id]=num;
+  }
+  savePrices();
+  renderMenu();
+  showToast(PRICES[id]?'已设置价格 ¥'+PRICES[id]:'已取消价格');
 }
 
 function findCat(key){
@@ -420,6 +488,13 @@ function toggleOrder(id){
 function updateBottomBar(){
   var bar=document.getElementById('bottomBar');
   document.getElementById('orderNum').textContent=orders.length;
+  var total=0;
+  orders.forEach(function(id){
+    if(PRICES[id])total+=PRICES[id];
+  });
+  var totalEl=document.getElementById('orderTotal');
+  if(total>0){totalEl.textContent='¥'+total;totalEl.style.display='';}
+  else{totalEl.style.display='none';}
   if(orders.length>0)bar.classList.add('show');
   else bar.classList.remove('show');
 }
@@ -427,16 +502,31 @@ function updateBottomBar(){
 /* ===== 订单列表 ===== */
 function showOrderList(){
   var el=document.getElementById('orderListEl');
-  if(!orders.length){el.innerHTML='<li style="text-align:center;color:var(--td);padding:20px;font-size:.86rem">还没有选择任何鸡尾酒</li>'}
-  else{
+  if(!orders.length){
+    el.innerHTML='<li style="text-align:center;color:var(--td);padding:20px;font-size:.86rem">还没有选择任何鸡尾酒</li>';
+  }else{
+    var total=0;
     el.innerHTML=orders.map(function(id){
       var c=C.find(function(x){return x.id===id});
       if(!c)return '';
+      var price=PRICES[id]||0;
+      if(price)total+=price;
+      return '<li class="order-item">'+
+        '<span class="order-item-name">'+c.name+'<small>'+(c.nameEn||'')+'</small></span>'+      var price=PRICES[id]||0;
+      if(price)total+=price;
       return '<li class="order-item">'+
         '<span class="order-item-name">'+c.name+'<small>'+(c.nameEn||'')+'</small></span>'+
+        (price?'<span class="order-item-price">¥'+price+'</span>':'')+
+        (price?'<span class="order-item-price">¥'+price+'</span>':'')+
         '<button class="order-item-remove" data-id="'+id+'">&times;</button>'+
       '</li>';
     }).join('');
+    if(total>0){
+      el.innerHTML+='<li class="order-total-row">'+
+        '<span class="order-total-label">合计</span>'+
+        '<span class="order-total-amount">¥'+total+'</span>'+
+      '</li>';
+    }
     el.querySelectorAll('.order-item-remove').forEach(function(btn){
       btn.addEventListener('click',function(){
         toggleOrder(btn.dataset.id);
@@ -486,20 +576,18 @@ async function submitOrders(){
 async function saveOrder(orderData){
   if(!GIST_TOKEN||!GIST_ID)return;
   try{
-    /* 读取现有订单 */
     var res=await fetch('https://api.github.com/gists/'+GIST_ID,{
       headers:{'Authorization':'token '+GIST_TOKEN}
     });
     var gistData=await res.json();
-    var content=gistData.files['alchemist-data.json'].content;
-    var parsed=JSON.parse(content);
-    if(!parsed.orders)parsed.orders=[];
-    parsed.orders.push(orderData);
-    /* 写回 */
+    var ordersFile=gistData.files['alchemist-orders.json'];
+    var existingOrders=[];
+    if(ordersFile){try{existingOrders=JSON.parse(ordersFile.content)}catch(e){}}
+    existingOrders.push(orderData);
     await fetch('https://api.github.com/gists/'+GIST_ID,{
       method:'PATCH',
       headers:{'Authorization':'token '+GIST_TOKEN,'Content-Type':'application/json'},
-      body:JSON.stringify({files:{'alchemist-data.json':{content:JSON.stringify(parsed,null,2)}}})
+      body:JSON.stringify({files:{'alchemist-orders.json':{content:JSON.stringify(existingOrders,null,2)}}})
     });
   }catch(e){console.log('订单保存失败',e)}
 }
@@ -670,7 +758,7 @@ function showWheelResult(c){
     document.getElementById('wRes').innerHTML=
         '<div class="wr-glass">'+renderGlassSvg(c.g,60)+'</div>'+
         '<div class="wr-name">'+c.name+'</div>'+
-        '<div class="wr-en">'+(c.nameEn||'')+'</div>'+
+        '<div class="wr-en">'+(c.nameEn||'')+'</div>'+(PRICES[c.id]?'<div style="font-family:var(--fm);font-size:.9rem;color:var(--ac);margin-bottom:6px">¥'+PRICES[c.id]+'</div>':'')+
         '<div class="wr-desc">'+(c.desc||'')+'</div>'+
         '<div class="wr-meta">'+
             '<span class="mb2">'+catLabel+'</span>'+

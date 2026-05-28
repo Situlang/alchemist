@@ -137,6 +137,53 @@ h1 span{color:var(--ac)}
 .search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:24px;height:24px;border:none;background:transparent;color:var(--td);cursor:pointer;font-size:.85rem;display:none;align-items:center;justify-content:center;border-radius:50%;transition:all .2s}
 .search-clear.show{display:flex}
 .search-clear:hover{color:var(--ac);background:var(--s2)}
+/* 转盘按钮 */
+.wheel-trigger{width:44px;height:44px;border-radius:var(--r);background:var(--sf);border:1px solid var(--bd);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem;transition:all .25s;flex-shrink:0;position:static}
+.wheel-trigger:hover{border-color:var(--ac);color:var(--ac);background:var(--s2)}
+.wheel-trigger:active{transform:scale(.95)}
+
+/* 转盘弹窗 */
+.wheel-ov{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);z-index:1500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:all .3s}
+.wheel-ov.on{opacity:1;visibility:visible}
+.wheel-box{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);width:100%;max-width:440px;max-height:90vh;overflow-y:auto;transform:translateY(20px) scale(.97);transition:transform .35s cubic-bezier(.25,.46,.45,.94);text-align:center}
+.wheel-ov.on .wheel-box{transform:translateY(0) scale(1)}
+.wheel-hdr{padding:20px 24px 0;display:flex;justify-content:space-between;align-items:center}
+.wheel-hdr h2{font-family:var(--fd);font-size:1.15rem;font-weight:700}
+.wheel-close{width:34px;height:34px;border:1px solid var(--bd);border-radius:8px;background:transparent;color:var(--tm);cursor:pointer;font-size:1.05rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.wheel-close:hover{border-color:var(--tm);color:var(--tx)}
+.wheel-body{padding:16px 24px 24px}
+
+/* 筛选 */
+.w-filters{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
+.w-filters select{flex:1;min-width:80px;padding:7px 24px 7px 8px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:var(--fb);font-size:.78rem;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%238a8279' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;transition:border-color .25s}
+.w-filters select:focus{border-color:var(--ac)}
+
+/* 转盘 */
+.w-stage{display:flex;flex-direction:column;align-items:center;position:relative;padding-top:28px;margin-bottom:8px}
+.w-ptr{position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:5;width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:22px solid var(--ac);filter:drop-shadow(0 3px 8px rgba(201,162,39,.45));transition:transform .3s}
+.w-ptr.bounce{animation:pBnc .45s ease}
+@keyframes pBnc{0%{transform:translateX(-50%) translateY(0)}30%{transform:translateX(-50%) translateY(-10px)}60%{transform:translateX(-50%) translateY(3px)}100%{transform:translateX(-50%) translateY(0)}}
+.w-cv{display:block;border-radius:50%;box-shadow:0 0 50px rgba(0,0,0,.6),0 0 0 2px rgba(201,162,39,.12);cursor:pointer}
+.w-info{text-align:center;margin-bottom:14px}
+.w-cnt{font-family:var(--fm);font-size:.7rem;color:var(--td)}
+
+/* 旋转按钮 */
+.w-spin{display:block;margin:0 auto;padding:12px 44px;background:var(--ac);border:none;border-radius:var(--r);color:var(--bg);font-family:var(--fd);font-weight:700;font-size:1rem;cursor:pointer;transition:all .25s;letter-spacing:.1em}
+.w-spin:hover:not(:disabled){background:var(--al);transform:translateY(-1px);box-shadow:0 6px 24px var(--ag)}
+.w-spin:disabled{opacity:.45;cursor:not-allowed}
+.w-spin:active:not(:disabled){transform:scale(.97)}
+
+/* 结果 */
+.w-result{text-align:center;margin-top:18px;opacity:0;transform:translateY(12px);transition:all .5s cubic-bezier(.25,.46,.45,.94)}
+.w-result.on{opacity:1;transform:translateY(0)}
+.wr-glass{margin-bottom:6px;filter:drop-shadow(0 0 12px rgba(201,162,39,.2))}
+.wr-name{font-family:var(--fd);font-size:1.4rem;font-weight:700;color:var(--ac);margin-bottom:4px}
+.wr-en{font-family:var(--fm);font-size:.74rem;color:var(--td);letter-spacing:.06em;margin-bottom:6px}
+.wr-desc{font-size:.82rem;color:var(--tm);line-height:1.6;margin-bottom:12px;padding:0 8px}
+.wr-meta{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.wr-meta .mb2{font-family:var(--fm);font-size:.66rem;padding:4px 12px;border-radius:20px;border:1px solid var(--bd);color:var(--tm)}
+.wr-act{padding:8px 22px;background:transparent;border:1px solid var(--ac);border-radius:var(--r);color:var(--ac);font-family:var(--fb);font-size:.84rem;cursor:pointer;transition:all .2s}
+.wr-act:hover{background:var(--ac);color:var(--bg)}
 
 </style>
 </head>
@@ -146,9 +193,12 @@ h1 span{color:var(--ac)}
     <h1><span>Alchemist</span></h1>
     <div class="sub-line">选择你的鸡尾酒</div>
   </header>
-<div class="search-wrap">
-  <input type="text" id="menuSearch" placeholder="搜索鸡尾酒名称、基酒、描述..." />
-  <button class="search-clear" id="searchClear">&times;</button>
+<div style="display:flex;gap:10px;align-items:center;max-width:500px;margin:0 auto 16px">
+  <div class="search-wrap" style="flex:1;min-width:0">
+    <input type="text" id="menuSearch" placeholder="搜索鸡尾酒名称、基酒、描述..." />
+    <button class="search-clear" id="searchClear">&times;</button>
+  </div>
+  <button class="wheel-trigger" id="wheelTrigger" title="随机选择">🎰</button>
 </div>
   <div class="filter-bar" id="filterBar"></div>
   <div class="grid" id="menuGrid"></div>
@@ -187,6 +237,29 @@ h1 span{color:var(--ac)}
 </div>
 
 <div class="toast" id="toast"></div>
+<!-- 转盘按钮 -->
+
+<!-- 转盘弹窗 -->
+<div class="wheel-ov" id="wheelOv">
+  <div class="wheel-box">
+    <div class="wheel-hdr">
+      <h2>今晚喝什么？</h2>
+      <button class="wheel-close" id="wheelClose">&times;</button>
+    </div>
+    <div class="wheel-body">
+      <div class="w-filters">
+        <select id="wfCat"><option value="">全部分类</option></select>
+      </div>
+      <div class="w-stage">
+        <div class="w-ptr" id="wPtr"></div>
+        <canvas id="wCv" class="w-cv" width="300" height="300"></canvas>
+      </div>
+      <div class="w-info"><span class="w-cnt" id="wCnt"></span></div>
+      <button class="w-spin" id="wSpin">转一下</button>
+      <div class="w-result" id="wRes"></div>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ===== 数据 ===== */
@@ -465,6 +538,205 @@ searchClear.addEventListener('click', function(){
   renderMenu();
   searchInput.focus();
 });
+/* ===== 转盘 ===== */
+var wRot = 0, wSpin = false, wData = [], wheelSz = 300;
+
+function openWheel() {
+    popWheelFilters();
+    updateWheelData();
+    document.getElementById('wheelOv').classList.add('on');
+    setTimeout(function() {
+        wheelSz = Math.min(300, document.querySelector('.wheel-body').clientWidth - 48, 300);
+        wheelSz = Math.max(200, wheelSz);
+        var cv = document.getElementById('wCv');
+        cv.width = wheelSz * 2;
+        cv.height = wheelSz * 2;
+        cv.style.width = wheelSz + 'px';
+        cv.style.height = wheelSz + 'px';
+        drawWheel();
+    }, 60);
+}
+
+function closeWheel() {
+    document.getElementById('wheelOv').classList.remove('on');
+}
+
+document.getElementById('wheelTrigger').addEventListener('click', openWheel);
+document.getElementById('wheelClose').addEventListener('click', closeWheel);
+document.getElementById('wheelOv').addEventListener('click', function(e) {
+    if (e.target === this) closeWheel();
+});
+
+function popWheelFilters() {
+    var cs = document.getElementById('wfCat');
+    cs.innerHTML = '<option value="">全部分类</option>';
+    var used = {};
+    C.forEach(function(c) { used[c.cat] = true; });
+    CATS.forEach(function(c) {
+        if (used[c.key]) cs.innerHTML += '<option value="' + c.key + '">' + c.emoji + ' ' + c.name + '</option>';
+    });
+    cs.addEventListener('change', function() {
+        updateWheelData();
+        drawWheel();
+        document.getElementById('wRes').className = 'w-result';
+        document.getElementById('wRes').innerHTML = '';
+    });
+}
+
+function updateWheelData() {
+    var cat = document.getElementById('wfCat').value;
+    wData = C.filter(function(c) {
+        if (cat && c.cat !== cat) return false;
+        return true;
+    });
+    document.getElementById('wCnt').textContent = wData.length + ' 款';
+    document.getElementById('wSpin').disabled = wData.length < 2;
+}
+
+function drawWheel() {
+    var cv = document.getElementById('wCv');
+    var ctx = cv.getContext('2d');
+    var cx = cv.width / 2, cy = cv.height / 2, r = cx - 8;
+    ctx.clearRect(0, 0, cv.width, cv.height);
+
+    if (!wData.length) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fillStyle = '#1e1a16';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(201,162,39,.3)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = '#5a554e';
+        ctx.font = '24px "Noto Serif SC"';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('无数据', cx, cy);
+        return;
+    }
+
+    var n = wData.length;
+    var sliceAngle = Math.PI * 2 / n;
+    var colors = [
+        'rgba(201,162,39,.12)', 'rgba(201,162,39,.06)',
+        'rgba(201,162,39,.18)', 'rgba(201,162,39,.03)'
+    ];
+    var strokeColor = 'rgba(201,162,39,.35)';
+
+    for (var i = 0; i < n; i++) {
+        var startAngle = i * sliceAngle - Math.PI / 2 + wRot;
+        var endAngle = startAngle + sliceAngle;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.fill();
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        var midAngle = startAngle + sliceAngle / 2;
+        ctx.rotate(midAngle);
+
+        ctx.fillStyle = '#f0ece4';
+        ctx.font = 'bold 22px "Noto Serif SC"';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        var name = wData[i].name;
+        var maxLen = Math.max(4, Math.floor(r * 0.35 / 11));
+        if (name.length > maxLen) name = name.slice(0, maxLen) + '…';
+        ctx.fillText(name, r * 0.55, 0);
+        ctx.restore();
+    }
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(201,162,39,.5)';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+    ctx.fillStyle = '#151210';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(201,162,39,.5)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+}
+
+document.getElementById('wSpin').addEventListener('click', function() {
+    if (wSpin || wData.length < 2) return;
+    wSpin = true;
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = '...';
+    document.getElementById('wRes').className = 'w-result';
+    document.getElementById('wRes').innerHTML = '';
+    var ptr = document.getElementById('wPtr');
+    ptr.classList.remove('bounce');
+
+    var n = wData.length;
+    var winIdx = Math.floor(Math.random() * n);
+    var sliceAngle = Math.PI * 2 / n;
+    var targetAngle = -(winIdx * sliceAngle + sliceAngle / 2);
+    var totalSpin = Math.PI * 2 * (5 + Math.floor(Math.random() * 3)) + targetAngle;
+    var startRot = wRot;
+    var duration = 4000 + Math.random() * 1500;
+    var startTime = performance.now();
+
+    function ease(t) {
+        return 1 - Math.pow(1 - t, 4);
+    }
+
+    function frame(now) {
+        var elapsed = now - startTime;
+        var progress = Math.min(elapsed / duration, 1);
+        wRot = startRot + totalSpin * ease(progress);
+        drawWheel();
+        if (progress < 1) {
+            requestAnimationFrame(frame);
+        } else {
+            wSpin = false;
+            btn.disabled = false;
+            btn.textContent = '再转一次';
+            ptr.classList.add('bounce');
+            showWheelResult(wData[winIdx]);
+        }
+    }
+    requestAnimationFrame(frame);
+});
+
+function showWheelResult(c) {
+    var catObj = findCat(c.cat);
+    var catLabel = catObj ? catObj.emoji + ' ' + catObj.name : c.cat;
+    var strLabels = { light: '轻度 Light', medium: '中度 Medium', strong: '强烈 Strong' };
+    var glassObj = GLASSES[c.g] || {};
+
+    document.getElementById('wRes').innerHTML =
+        '<div class="wr-glass">' + renderGlassSvg(c.g, 60) + '</div>' +
+        '<div class="wr-name">' + c.name + '</div>' +
+        '<div class="wr-en">' + (c.nameEn || '') + '</div>' +
+        '<div class="wr-desc">' + (c.desc || '') + '</div>' +
+        '<div class="wr-meta">' +
+            '<span class="mb2">' + catLabel + '</span>' +
+            '<span class="mb2">' + (strLabels[c.str] || c.str) + '</span>' +
+            (glassObj.n ? '<span class="mb2">' + glassObj.n + '</span>' : '') +
+        '</div>' +
+        '<button class="wr-act" onclick="wheelOrder(\'' + c.id + '\')">' +
+            (orders.indexOf(c.id) >= 0 ? '已选择' : '选这个') +
+        '</button>';
+    document.getElementById('wRes').className = 'w-result on';
+}
+
+function wheelOrder(id) {
+    toggleOrder(id);
+    showWheelResult(C.find(function(c) { return c.id === id; }));
+}
 
 </script>
 </body>

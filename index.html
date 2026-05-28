@@ -24,9 +24,9 @@ h1 span{color:var(--ac)}
 .sub{font-family:var(--fm);font-size:.76rem;color:var(--tm);letter-spacing:.3em;text-transform:uppercase;margin-top:6px}
 .tbar{display:flex;gap:10px;margin-bottom:18px;align-items:center;flex-wrap:wrap}
 .sb{flex:1;min-width:160px;position:relative}
-.sb input{width:100%;padding:11px 16px 11px 42px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:var(--fb);font-size:.92rem;outline:none;transition:border-color .3s,box-shadow .3s}
+.sb input{width:100%;padding:11px 16px 11px 54px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:var(--fb);font-size:.92rem;outline:none;transition:border-color .3s,box-shadow .3s}
 .sb input::placeholder{color:var(--td)}.sb input:focus{border-color:var(--ac);box-shadow:0 0 0 3px var(--ag)}
-.sb::before{content:'';position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8279' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10.5' cy='10.5' r='7'/%3E%3Cline x1='15.5' y1='15.5' x2='21' y2='21'/%3E%3C/svg%3E");background-size:contain;background-repeat:no-repeat;pointer-events:none}
+.sb::before{content:'';position:absolute;left:30px;top:50%;transform:translateY(-50%);width:16px;height:16px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8279' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10.5' cy='10.5' r='7'/%3E%3Cline x1='15.5' y1='15.5' x2='21' y2='21'/%3E%3C/svg%3E");background-size:contain;background-repeat:no-repeat;pointer-events:none}
 .ba{display:flex;align-items:center;gap:8px;padding:11px 22px;background:var(--ac);color:var(--bg);border:none;border-radius:var(--r);font-family:var(--fd);font-weight:600;font-size:.92rem;cursor:pointer;transition:all .25s;white-space:nowrap}
 .ba:hover{background:var(--al);transform:translateY(-1px);box-shadow:0 4px 20px var(--ag)}
 .btn-m{display:flex;align-items:center;gap:5px;padding:10px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);color:var(--tm);font-family:var(--fb);font-size:.82rem;cursor:pointer;white-space:nowrap;transition:all .25s}
@@ -1264,25 +1264,18 @@ function openGistSettings() {
     });
 }
 
-function updateGistUI() {
-    var bar = document.getElementById('pfBar');
-    var old = document.getElementById('gistBar');
-    if (old) old.remove();
-    var div = document.createElement('div');
-    div.id = 'gistBar';
-    div.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 16px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);font-family:var(--fm);font-size:.78rem;color:var(--tm)';
-    if (GIST_TOKEN && GIST_ID) {
-        div.innerHTML =
-            '<span style="color:var(--ok)">◉ 已连接云同步</span>' +
-            '<button class="pf-edit" onclick="gistLoad()" style="font-size:.7rem">拉取最新</button>' +
-            '<button class="pf-edit" onclick="gistSave();showT(\'手动同步完成\')" style="font-size:.7rem">手动推送</button>' +
-            '<button class="pf-reset" onclick="openGistSettings()" style="font-size:.7rem">设置</button>';
-    } else {
-        div.innerHTML =
-            '<span style="color:#bf9f4d">○ 未连接云同步</span>' +
-            '<button class="pf-edit" onclick="openGistSettings()" style="font-size:.7rem">设置同步</button>';
-    }
-    bar.parentNode.insertBefore(div, bar);
+function updateGistUI(){
+    var old=document.getElementById('gistDot');
+    if(old)old.remove();
+    if(window.location.protocol==='file:')return;
+    var sb=document.querySelector('.sb');
+    if(!sb)return;
+    var dot=document.createElement('span');
+    dot.id='gistDot';
+    dot.title=GIST_TOKEN&&GIST_ID?'云同步已连接（点击设置）':'未连接云同步（点击设置）';
+    dot.style.cssText='position:absolute;left:14px;top:50%;transform:translateY(-50%);width:10px;height:10px;border-radius:50%;cursor:pointer;z-index:2;transition:all .2s;'+(GIST_TOKEN&&GIST_ID?'background:var(--ok);box-shadow:0 0 6px rgba(90,154,90,.5)':'background:var(--td)');
+    dot.addEventListener('click',function(e){e.stopPropagation();openGistSettings()});
+    sb.appendChild(dot);
 }
 
 // 启动

@@ -168,10 +168,10 @@ h1 span{color:var(--ac)}
 .w-cnt{font-family:var(--fm);font-size:.7rem;color:var(--td)}
 
 /* 旋转按钮 */
-.w-spin{display:block;margin:0 auto;padding:12px 44px;background:var(--ac);border:none;border-radius:var(--r);color:var(--bg);font-family:var(--fd);font-weight:700;font-size:1rem;cursor:pointer;transition:all .25s;letter-spacing:.1em}
-.w-spin:hover:not(:disabled){background:var(--al);transform:translateY(-1px);box-shadow:0 6px 24px var(--ag)}
+.w-spin{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:72px;height:72px;border-radius:50%;background:var(--sf);border:2px solid var(--ac);color:var(--ac);font-family:var(--fd);font-weight:700;font-size:.78rem;cursor:pointer;transition:all .25s;z-index:10;letter-spacing:.05em;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(0,0,0,.5)}
+.w-spin:hover:not(:disabled){background:var(--ac);color:var(--bg);box-shadow:0 0 30px rgba(201,162,39,.5)}
 .w-spin:disabled{opacity:.45;cursor:not-allowed}
-.w-spin:active:not(:disabled){transform:scale(.97)}
+.w-spin:active:not(:disabled){transform:translate(-50%,-50%) scale(.92)}
 
 /* 结果 */
 .w-result{text-align:center;margin-top:18px;opacity:0;transform:translateY(12px);transition:all .5s cubic-bezier(.25,.46,.45,.94)}
@@ -257,13 +257,13 @@ h1 span{color:var(--ac)}
         <select id="wfCat"></select>
         <select id="wfStr"></select>
       </div>
-      <div class="w-stage">
-        <div class="w-ptr" id="wPtr"></div>
-        <canvas id="wCv" class="w-cv" width="340" height="340"></canvas>
-      </div>
-      <div class="w-info"><span class="w-cnt" id="wCnt"></span></div>
-      <button class="w-spin" id="wSpin">转一下</button>
-      <div class="w-result" id="wRes"></div>
+<div class="w-stage">
+  <div class="w-ptr" id="wPtr"></div>
+  <canvas id="wCv" class="w-cv" width="340" height="340"></canvas>
+  <button class="w-spin" id="wSpin">转一下</button>
+</div>
+<div class="w-info"><span class="w-cnt" id="wCnt"></span></div>
+<div class="w-result" id="wRes"></div>
     </div>
   </div>
 </div>
@@ -625,11 +625,6 @@ function drawWheel(){
   }
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
   ctx.strokeStyle=GC.sk;ctx.lineWidth=2.5;ctx.stroke();
-  ctx.beginPath();ctx.arc(cx,cy,18,0,Math.PI*2);
-  ctx.fillStyle='#151210';ctx.fill();
-  ctx.strokeStyle=GC.sk;ctx.lineWidth=2;ctx.stroke();
-  ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);
-  ctx.fillStyle=GC.sk;ctx.fill();
 }
 
 document.getElementById('wSpin').addEventListener('click',function(){

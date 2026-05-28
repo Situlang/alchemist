@@ -128,6 +128,16 @@ h1 span{color:var(--ac)}
   .filter-bar{gap:6px;padding:8px 0}
   .filter-btn{padding:6px 14px;font-size:.76rem}
 }
+/* 搜索栏 */
+.search-wrap{position:relative;max-width:400px;margin:0 auto 16px}
+.search-wrap input{width:100%;padding:11px 16px 11px 40px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:var(--fb);font-size:.9rem;outline:none;transition:border-color .3s,box-shadow .3s}
+.search-wrap input::placeholder{color:var(--td)}
+.search-wrap input:focus{border-color:var(--ac);box-shadow:0 0 0 3px var(--ag)}
+.search-wrap::before{content:'';position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8279' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10.5' cy='10.5' r='7'/%3E%3Cline x1='15.5' y1='15.5' x2='21' y2='21'/%3E%3C/svg%3E");background-size:contain;background-repeat:no-repeat;pointer-events:none}
+.search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:24px;height:24px;border:none;background:transparent;color:var(--td);cursor:pointer;font-size:.85rem;display:none;align-items:center;justify-content:center;border-radius:50%;transition:all .2s}
+.search-clear.show{display:flex}
+.search-clear:hover{color:var(--ac);background:var(--s2)}
+
 </style>
 </head>
 <body>
@@ -136,6 +146,10 @@ h1 span{color:var(--ac)}
     <h1><span>Alchemist</span></h1>
     <div class="sub-line">选择你的鸡尾酒</div>
   </header>
+<div class="search-wrap">
+  <input type="text" id="menuSearch" placeholder="搜索鸡尾酒名称、基酒、描述..." />
+  <button class="search-clear" id="searchClear">&times;</button>
+</div>
   <div class="filter-bar" id="filterBar"></div>
   <div class="grid" id="menuGrid"></div>
 </div>
@@ -248,12 +262,24 @@ function renderFilters(){
 /* ===== 渲染菜单 ===== */
 function renderMenu(){
   var gr=document.getElementById('menuGrid');
+  var q=(document.getElementById('menuSearch').value||'').toLowerCase().trim();
   var list=C.filter(function(c){
     if(activeFilter!=='all'&&c.cat!==activeFilter)return false;
+    if(q){
+      var haystack=[
+        c.name,
+        c.nameEn||'',
+        c.desc||'',
+        c.base||''
+      ].concat(c.ing.map(function(i){return i.n}))
+       .concat(c.tags||[])
+       .join(' ').toLowerCase();
+      return haystack.indexOf(q)>=0;
+    }
     return true;
   });
   if(!list.length){
-    gr.innerHTML='<div class="empty">暂无可选鸡尾酒</div>';
+    gr.innerHTML='<div class="empty">'+(q?'没有找到匹配「'+q+'」的鸡尾酒':'暂无可选鸡尾酒')+'</div>';
     return;
   }
   gr.innerHTML=list.map(function(c,i){
@@ -420,6 +446,26 @@ if(document.readyState==='loading'){
 }else{
   init();
 }
+/* ===== 搜索 ===== */
+var searchInput = document.getElementById('menuSearch');
+var searchClear = document.getElementById('searchClear');
+var _searchTimer = null;
+
+searchInput.addEventListener('input', function(){
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(function(){
+    renderMenu();
+    searchClear.classList.toggle('show', searchInput.value.trim().length > 0);
+  }, 300);
+});
+
+searchClear.addEventListener('click', function(){
+  searchInput.value = '';
+  searchClear.classList.remove('show');
+  renderMenu();
+  searchInput.focus();
+});
+
 </script>
 </body>
 </html>

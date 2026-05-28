@@ -405,18 +405,19 @@ function renderMenu(){
     var glassLabel=glassObj.n||'';
     var glassSvg=renderGlassSvg(c.g,48);
     var ordered=orders.indexOf(c.id)>=0;
-    return '<div class="card" data-id="'+c.id+'" style="animation-delay:'+Math.min(i*.04,.3)+'s">'+
-      '<div class="card-glass">'+glassSvg+'</div>'+
-      '<div class="card-badges">'+
-        '<span class="badge cat">'+catLabel+'</span>'+
-        '<span class="badge '+strClass+'">'+strLabel+'</span>'+
-        (glassLabel?'<span class="badge glass">'+glassLabel+'</span>':'')+
-      '</div>'+
-      '<div class="card-name">'+c.name+'</div>'+
-'<div class="card-en">'+(c.nameEn||'')+'</div>'+
-(PRICES[c.id]?'<div class="card-price">¥ <span>'+PRICES[c.id]+'</span></div>':'')+
-'<div class="card-desc">'+(c.desc||'')+'</div>'+
-      '<button class="order-btn'+(ordered?' ordered':'')+'" data-id="'+c.id+'">'+(ordered?'已选择':'点单')+'</button>'+
+      return '<div class="card" data-id="'+c.id+'" style="animation-delay:'+Math.min(i*.04,.3)+'s">'+
+        '<div class="card-glass">'+glassSvg+'</div>'+
+        '<div class="card-badges">'+
+          '<span class="badge cat">'+catLabel+'</span>'+
+          '<span class="badge '+strClass+'">'+strLabel+'</span>'+
+          (glassLabel?'<span class="badge glass">'+glassLabel+'</span>':'')+
+        '</div>'+
+        '<div class="card-name">'+c.name+'</div>'+
+        '<div class="card-en">'+(c.nameEn||'')+'</div>'+
+        (PRICES[c.id]?'<div class="card-price">¥ <span>'+PRICES[c.id]+'</span></div>':'')+
+        '<div class="card-desc">'+(c.desc||'')+'</div>'+
+        '<button class="order-btn'+(ordered?' ordered':'')+'" data-id="'+c.id+'">'+(ordered?'已选择':'点单')+'</button>'+
+      '</div>';
   }).join('');
 
   gr.querySelectorAll('.order-btn').forEach(function(btn){

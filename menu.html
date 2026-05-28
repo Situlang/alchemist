@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鸡尾酒菜单</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Noto+Serif+SC:wght@300;400;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0907;--sf:#151210;--s2:#1e1a16;--s3:#272219;
+  --ac:#c9a227;--ag:#c9a22744;--al:#e8c547;
+  --tx:#f0ece4;--tm:#8a8279;--td:#5a554e;
+  --bd:#2a2520;--ok:#5a9a5a;
+  --r:8px;--rl:16px;
+  --fd:'Playfair Display','Noto Serif SC',serif;
+  --fb:'Noto Serif SC','Playfair Display',serif;
+  --fm:'DM Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--bg);color:var(--tx);min-height:100vh;line-height:1.7;font-weight:300}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 15% 20%,#1a0f05,transparent 50%),radial-gradient(ellipse at 85% 80%,#0f0a14,transparent 50%);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;inset:0;opacity:.035;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+
+.app{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 24px}
+
+/* 顶部 */
+header{padding:40px 0 20px;text-align:center}
+header::after{content:'';display:block;width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--ac),transparent);margin:16px auto 0}
+h1{font-family:var(--fd);font-weight:900;font-size:clamp(1.6rem,5vw,2.4rem);letter-spacing:.08em;text-transform:uppercase}
+h1 span{color:var(--ac)}
+.sub-line{font-family:var(--fm);font-size:.72rem;color:var(--tm);letter-spacing:.2em;text-transform:uppercase;margin-top:4px}
+
+/* 筛选栏 */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:16px 0 24px;position:sticky;top:0;z-index:50;background:var(--bg);padding:10px 0}
+.filter-btn{padding:8px 18px;background:var(--sf);border:1px solid var(--bd);border-radius:100px;color:var(--tm);font-family:var(--fb);font-size:.82rem;cursor:pointer;white-space:nowrap;transition:all .25s}
+.filter-btn:hover{border-color:var(--td);color:var(--tx)}
+.filter-btn.on{background:var(--ac);border-color:var(--ac);color:var(--bg);font-weight:400}
+
+/* 网格 */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding-bottom:60px}
+
+/* 卡片 */
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);padding:24px;cursor:pointer;position:relative;overflow:hidden;opacity:0;animation:ci .5s ease forwards;transition:all .35s cubic-bezier(.25,.46,.45,.94)}
+.card:nth-child(1){animation-delay:0s}
+.card:nth-child(2){animation-delay:.04s}
+.card:nth-child(3){animation-delay:.08s}
+.card:nth-child(4){animation-delay:.12s}
+@keyframes ci{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--ac),transparent);opacity:0;transition:opacity .35s}
+.card:hover{border-color:var(--ac);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.4),0 0 0 1px var(--ag)}
+.card:hover::before{opacity:1}
+
+.card-glass{display:flex;justify-content:center;margin-bottom:12px;transition:filter .3s}
+.card:hover .card-glass{filter:drop-shadow(0 0 10px rgba(201,162,39,.2))}
+.card-badges{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+.badge{font-family:var(--fm);font-size:.62rem;padding:3px 10px;border-radius:20px;border:1px solid var(--bd);color:var(--tm)}
+.badge.cat{color:var(--ac);border-color:rgba(201,162,39,.3);background:rgba(201,162,39,.06)}
+.badge.light{color:#6dbf6d;border-color:rgba(90,154,90,.3);background:rgba(90,154,90,.06)}
+.badge.medium{color:#bf9f4d;border-color:rgba(191,159,77,.3);background:rgba(191,159,77,.06)}
+.badge.strong{color:#bf5d5d;border-color:rgba(179,64,64,.3);background:rgba(179,64,64,.06)}
+.badge.glass{color:var(--tm);border-color:var(--bd);background:var(--s3)}
+.card-name{font-family:var(--fd);font-size:1.3rem;font-weight:700;text-align:center;line-height:1.2}
+.card-en{font-family:var(--fm);font-size:.72rem;color:var(--td);text-align:center;letter-spacing:.06em;margin:2px 0 12px}
+.card-desc{font-size:.84rem;color:var(--tm);line-height:1.6;text-align:center;margin-bottom:16px}
+
+/* 点单按钮 */
+.order-btn{display:block;width:100%;padding:12px;background:var(--ac);border:none;border-radius:var(--r);color:var(--bg);font-family:var(--fd);font-weight:600;font-size:.92rem;cursor:pointer;transition:all .25s;letter-spacing:.08em}
+.order-btn:hover{background:var(--al);transform:translateY(-1px);box-shadow:0 4px 16px var(--ag)}
+.order-btn:active{transform:scale(.98)}
+.order-btn.ordered{background:var(--ok);cursor:default}
+.order-btn.ordered:hover{transform:none;box-shadow:none}
+
+/* 空状态 */
+.empty{text-align:center;padding:80px 20px;color:var(--td);font-family:var(--fm);font-size:.85rem}
+
+/* 底部栏 */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--sf);border-top:1px solid var(--bd);padding:12px 24px;z-index:100;transform:translateY(100%);transition:transform .3s}
+.bottom-bar.show{transform:translateY(0)}
+.bottom-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.order-count{font-family:var(--fm);font-size:.82rem;color:var(--tm)}
+.order-count strong{color:var(--ac);font-weight:400}
+.submit-btn{padding:10px 28px;background:var(--ac);border:none;border-radius:var(--r);color:var(--bg);font-family:var(--fd);font-weight:600;font-size:.88rem;cursor:pointer;transition:all .25s}
+.submit-btn:hover{background:var(--al);box-shadow:0 4px 16px var(--ag)}
+
+/* 已点详情弹窗 */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:all .3s}
+.ov.on{opacity:1;visibility:visible}
+.mdl{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);width:100%;max-width:460px;max-height:80vh;overflow-y:auto;transform:translateY(20px) scale(.97);transition:transform .35s cubic-bezier(.25,.46,.45,.94)}
+.ov.on .mdl{transform:translateY(0) scale(1)}
+.mh{padding:22px 26px 0;display:flex;justify-content:space-between;align-items:center}
+.mh h2{font-family:var(--fd);font-size:1.2rem;font-weight:700}
+.mc{width:36px;height:36px;border:1px solid var(--bd);border-radius:8px;background:transparent;color:var(--tm);cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.mc:hover{border-color:var(--tm);color:var(--tx)}
+.mb{padding:18px 26px 24px}
+
+.order-list{list-style:none}
+.order-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--bd)}
+.order-item:last-child{border-bottom:none}
+.order-item-name{font-size:.9rem}
+.order-item-name small{color:var(--td);font-family:var(--fm);font-size:.72rem;margin-left:4px}
+.order-item-remove{background:none;border:none;color:var(--td);cursor:pointer;font-size:1rem;padding:4px 8px;transition:color .2s}
+.order-item-remove:hover{color:var(--dg)}
+.order-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:16px;padding-top:16px;border-top:1px solid var(--bd)}
+.bc{padding:10px 24px;background:transparent;border:1px solid var(--bd);border-radius:var(--r);color:var(--tm);font-family:var(--fb);font-size:.88rem;cursor:pointer;transition:all .2s}
+.bc:hover{border-color:var(--tm);color:var(--tx)}
+.bs{padding:10px 28px;background:var(--ac);border:none;border-radius:var(--r);color:var(--bg);font-family:var(--fd);font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s}
+.bs:hover{background:var(--al);box-shadow:0 4px 16px var(--ag)}
+
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--s2);border:1px solid var(--ac);color:var(--tx);padding:12px 28px;border-radius:var(--r);font-family:var(--fm);font-size:.8rem;z-index:3000;opacity:0;transition:all .35s;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.5);max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* 提交成功 */
+.success-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(12px);z-index:2000;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .4s}
+.success-overlay.on{opacity:1;visibility:visible}
+.success-box{text-align:center;transform:scale(.9);transition:transform .4s}
+.success-overlay.on .success-box{transform:scale(1)}
+.success-icon{font-size:4rem;margin-bottom:16px}
+.success-title{font-family:var(--fd);font-size:1.5rem;font-weight:700;margin-bottom:8px}
+.success-sub{font-family:var(--fm);font-size:.82rem;color:var(--tm);margin-bottom:24px}
+.success-btn{padding:10px 32px;background:var(--ac);border:none;border-radius:var(--r);color:var(--bg);font-family:var(--fd);font-weight:600;font-size:.9rem;cursor:pointer}
+
+@media(max-width:600px){
+  .app{padding:0 16px}
+  header{padding:28px 0 16px}
+  .grid{grid-template-columns:1fr}
+  .filter-bar{gap:6px;padding:8px 0}
+  .filter-btn{padding:6px 14px;font-size:.76rem}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1><span>Alchemist</span></h1>
+    <div class="sub-line">选择你的鸡尾酒</div>
+  </header>
+  <div class="filter-bar" id="filterBar"></div>
+  <div class="grid" id="menuGrid"></div>
+</div>
+
+<!-- 底部点单栏 -->
+<div class="bottom-bar" id="bottomBar">
+  <div class="bottom-inner">
+    <span class="order-count">已选 <strong id="orderNum">0</strong> 款</span>
+    <button class="submit-btn" onclick="showOrderList()">查看订单</button>
+  </div>
+</div>
+
+<!-- 订单详情弹窗 -->
+<div class="ov" id="orderOv">
+  <div class="mdl">
+    <div class="mh"><h2>我的订单</h2><button class="mc" onclick="closeOrderList()">&times;</button></div>
+    <div class="mb">
+      <ul class="order-list" id="orderListEl"></ul>
+      <div class="order-actions">
+        <button class="bc" onclick="clearOrders()">清空</button>
+        <button class="bs" onclick="submitOrders()">提交订单</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 提交成功 -->
+<div class="success-overlay" id="successOv">
+  <div class="success-box">
+    <div class="success-icon">🍸</div>
+    <div class="success-title">订单已提交</div>
+    <div class="success-sub" id="successMsg">请等待调酒师制作</div>
+    <button class="success-btn" onclick="closeSuccess()">好的</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== 数据 ===== */
+var GLASSES={};
+var C=[];
+var CATS=[];
+var SL={light:'轻度 Light',medium:'中度 Medium',strong:'强烈 Strong'};
+var orders=[];
+var activeFilter='all';
+var GIST_TOKEN=localStorage.getItem('alchemist_gist_token')||'';
+var GIST_ID=localStorage.getItem('alchemist_gist_id')||'';
+
+/* ===== 初始化 ===== */
+async function init(){
+  var loaded=await loadFromGist();
+  if(!loaded){showToast('无法加载菜单数据，请刷新重试');return}
+  renderFilters();
+  renderMenu();
+}
+
+async function loadFromGist(){
+  if(!GIST_TOKEN||!GIST_ID)return false;
+  try{
+    var res=await fetch('https://api.github.com/gists/'+GIST_ID,{
+      headers:{'Authorization':'token '+GIST_TOKEN}
+    });
+    if(!res.ok)return false;
+    var data=await res.json();
+    var content=data.files['alchemist-data.json'].content;
+    var parsed=JSON.parse(content);
+    if(parsed.cocktails){
+      C=parsed.cocktails;
+      if(parsed.categories)CATS=parsed.categories;
+      if(parsed.glasses)GLASSES=parsed.glasses;
+      if(!CATS.length)CATS=[
+        {key:'classic',name:'经典',emoji:'🥃'},
+        {key:'sour',name:'酸酒',emoji:'🍋'},
+        {key:'highball',name:'高球',emoji:'🧊'},
+        {key:'martini',name:'马天尼',emoji:'🍸'},
+        {key:'manhattan',name:'曼哈顿',emoji:'🥃'},
+        {key:'fizz',name:'菲士',emoji:'🫧'},
+        {key:'sling',name:'司令',emoji:'🍹'},
+        {key:'tiki',name:'提基',emoji:'🌴'},
+        {key:'toddy',name:'托蒂',emoji:'☕'},
+        {key:'punch',name:'潘趣',emoji:'🎉'}
+      ];
+      return true;
+    }
+  }catch(e){console.log(e)}
+  return false;
+}
+
+/* ===== 渲染分类筛选 ===== */
+function renderFilters(){
+  var el=document.getElementById('filterBar');
+  var h='<button class="filter-btn on" data-c="all">全部</button>';
+  var used={};
+  C.forEach(function(c){used[c.cat]=true});
+  CATS.forEach(function(c){
+    if(used[c.key])h+='<button class="filter-btn" data-c="'+c.key+'">'+c.emoji+' '+c.name+'</button>';
+  });
+  el.innerHTML=h;
+  el.querySelectorAll('.filter-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      el.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('on')});
+      btn.classList.add('on');
+      activeFilter=btn.dataset.c;
+      renderMenu();
+    });
+  });
+}
+
+/* ===== 渲染菜单 ===== */
+function renderMenu(){
+  var gr=document.getElementById('menuGrid');
+  var list=C.filter(function(c){
+    if(activeFilter!=='all'&&c.cat!==activeFilter)return false;
+    return true;
+  });
+  if(!list.length){
+    gr.innerHTML='<div class="empty">暂无可选鸡尾酒</div>';
+    return;
+  }
+  gr.innerHTML=list.map(function(c,i){
+    var catObj=findCat(c.cat);
+    var catLabel=catObj?catObj.emoji+' '+catObj.name:c.cat;
+    var strClass=c.str==='light'?'light':c.str==='strong'?'strong':'medium';
+    var strLabel=SL[c.str]||c.str;
+    var glassObj=GLASSES[c.g]||{};
+    var glassLabel=glassObj.n||'';
+    var glassSvg=renderGlassSvg(c.g,48);
+    var ordered=orders.indexOf(c.id)>=0;
+    return '<div class="card" data-id="'+c.id+'" style="animation-delay:'+Math.min(i*.04,.3)+'s">'+
+      '<div class="card-glass">'+glassSvg+'</div>'+
+      '<div class="card-badges">'+
+        '<span class="badge cat">'+catLabel+'</span>'+
+        '<span class="badge '+strClass+'">'+strLabel+'</span>'+
+        (glassLabel?'<span class="badge glass">'+glassLabel+'</span>':'')+
+      '</div>'+
+      '<div class="card-name">'+c.name+'</div>'+
+      '<div class="card-en">'+(c.nameEn||'')+'</div>'+
+      '<div class="card-desc">'+(c.desc||'')+'</div>'+
+      '<button class="order-btn'+(ordered?' ordered':'')+'" data-id="'+c.id+'">'+(ordered?'已选择':'点单')+'</button>'+
+    '</div>';
+  }).join('');
+
+  gr.querySelectorAll('.order-btn').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      toggleOrder(btn.dataset.id);
+    });
+  });
+}
+
+function findCat(key){
+  for(var i=0;i<CATS.length;i++){if(CATS[i].key===key)return CATS[i]}
+  return null;
+}
+
+function renderGlassSvg(key,sz){
+  var g=GLASSES[key];
+  if(!g||!g.s)return '';
+  var p=g.vb.split(/[\s,]+/).map(Number);
+  var w=sz,h=Math.round(w*p[3]/p[2]);
+  var mx=Math.round(sz*1.3);
+  if(h>mx){w=Math.round(mx*p[2]/p[3]);h=mx}
+  return '<svg viewBox="'+g.vb+'" width="'+w+'" height="'+h+'" fill="none">'+g.s+'</svg>';
+}
+
+/* ===== 点单逻辑 ===== */
+function toggleOrder(id){
+  var idx=orders.indexOf(id);
+  if(idx>=0){orders.splice(idx,1);showToast('已取消')}
+  else{orders.push(id);showToast('已选择')}
+  renderMenu();
+  updateBottomBar();
+}
+
+function updateBottomBar(){
+  var bar=document.getElementById('bottomBar');
+  document.getElementById('orderNum').textContent=orders.length;
+  if(orders.length>0)bar.classList.add('show');
+  else bar.classList.remove('show');
+}
+
+/* ===== 订单列表 ===== */
+function showOrderList(){
+  var el=document.getElementById('orderListEl');
+  if(!orders.length){el.innerHTML='<li style="text-align:center;color:var(--td);padding:20px;font-size:.86rem">还没有选择任何鸡尾酒</li>'}
+  else{
+    el.innerHTML=orders.map(function(id){
+      var c=C.find(function(x){return x.id===id});
+      if(!c)return '';
+      return '<li class="order-item">'+
+        '<span class="order-item-name">'+c.name+'<small>'+(c.nameEn||'')+'</small></span>'+
+        '<button class="order-item-remove" data-id="'+id+'">&times;</button>'+
+      '</li>';
+    }).join('');
+    el.querySelectorAll('.order-item-remove').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        toggleOrder(btn.dataset.id);
+        showOrderList();
+      });
+    });
+  }
+  document.getElementById('orderOv').classList.add('on');
+}
+
+function closeOrderList(){
+  document.getElementById('orderOv').classList.remove('on');
+}
+
+function clearOrders(){
+  orders=[];
+  updateBottomBar();
+  renderMenu();
+  closeOrderList();
+  showToast('订单已清空');
+}
+
+/* ===== 提交订单 ===== */
+async function submitOrders(){
+  if(!orders.length){showToast('请先选择鸡尾酒');return}
+  var orderItems=orders.map(function(id){
+    var c=C.find(function(x){return x.id===id});
+    return c?{id:c.id,name:c.name,nameEn:c.nameEn}:{id:id,name:'未知',nameEn:''};
+  });
+  var orderData={
+    id:'order_'+Date.now(),
+    time:new Date().toLocaleString('zh-CN'),
+    items:orderItems,
+    status:'pending'
+  };
+
+  /* 保存到 Gist */
+  await saveOrder(orderData);
+
+  closeOrderList();
+  orders=[];
+  updateBottomBar();
+  renderMenu();
+  showSuccess(orderItems.length);
+}
+
+async function saveOrder(orderData){
+  if(!GIST_TOKEN||!GIST_ID)return;
+  try{
+    /* 读取现有订单 */
+    var res=await fetch('https://api.github.com/gists/'+GIST_ID,{
+      headers:{'Authorization':'token '+GIST_TOKEN}
+    });
+    var gistData=await res.json();
+    var content=gistData.files['alchemist-data.json'].content;
+    var parsed=JSON.parse(content);
+    if(!parsed.orders)parsed.orders=[];
+    parsed.orders.push(orderData);
+    /* 写回 */
+    await fetch('https://api.github.com/gists/'+GIST_ID,{
+      method:'PATCH',
+      headers:{'Authorization':'token '+GIST_TOKEN,'Content-Type':'application/json'},
+      body:JSON.stringify({files:{'alchemist-data.json':{content:JSON.stringify(parsed,null,2)}}})
+    });
+  }catch(e){console.log('订单保存失败',e)}
+}
+
+/* ===== 弹窗 ===== */
+function showSuccess(count){
+  document.getElementById('successMsg').textContent='共 '+count+' 款，调酒师已收到您的订单';
+  document.getElementById('successOv').classList.add('on');
+}
+function closeSuccess(){
+  document.getElementById('successOv').classList.remove('on');
+}
+
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('on');
+  setTimeout(function(){t.classList.remove('on')},2000);
+}
+
+/* ===== 启动 ===== */
+if(document.readyState==='loading'){
+  window.addEventListener('DOMContentLoaded',init);
+}else{
+  init();
+}
+</script>
+</body>
+</html>

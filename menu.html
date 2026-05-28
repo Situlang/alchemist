@@ -42,7 +42,7 @@ h1 span{color:var(--ac)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding-bottom:60px}
 
 /* 卡片 */
-.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);padding:24px;cursor:pointer;position:relative;overflow:hidden;opacity:0;animation:ci .5s ease forwards;transition:all .35s cubic-bezier(.25,.46,.45,.94)}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);padding:24px;cursor:pointer;position:relative;overflow:hidden;opacity:0;animation:ci .5s ease forwards;transition:all .35s cubic-bezier(.25,.46,.45,.94);display:flex;flex-direction:column;min-height:360px}
 .card:nth-child(1){animation-delay:0s}
 .card:nth-child(2){animation-delay:.04s}
 .card:nth-child(3){animation-delay:.08s}
@@ -64,9 +64,10 @@ h1 span{color:var(--ac)}
 .card-name{font-family:var(--fd);font-size:1.3rem;font-weight:700;text-align:center;line-height:1.2}
 .card-en{font-family:var(--fm);font-size:.72rem;color:var(--td);text-align:center;letter-spacing:.06em;margin:2px 0 12px}
 .card-desc{font-size:.84rem;color:var(--tm);line-height:1.6;text-align:center;margin-bottom:16px}
+.card-desc{flex:1}
 
 /* 点单按钮 */
-.order-btn{display:block;width:100%;padding:12px;background:var(--ac);border:none;border-radius:var(--r);color:var(--bg);font-family:var(--fd);font-weight:600;font-size:.92rem;cursor:pointer;transition:all .25s;letter-spacing:.08em}
+.order-btn{display:block;width:100%;padding:12px;background:var(--ac);border:none;border-radius:var(--r);color:var(--bg);font-family:var(--fd);font-weight:600;font-size:.92rem;cursor:pointer;transition:all .25s;letter-spacing:.08em;margin-top:auto;flex-shrink:0}
 .order-btn:hover{background:var(--al);transform:translateY(-1px);box-shadow:0 4px 16px var(--ag)}
 .order-btn:active{transform:scale(.98)}
 .order-btn.ordered{background:var(--ok);cursor:default}
@@ -193,6 +194,21 @@ h1 span{color:var(--ac)}
 .order-total-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;margin-top:4px;border-top:2px solid var(--ac)}
 .order-total-label{font-family:var(--fd);font-size:.92rem;font-weight:600}
 .order-total-amount{font-family:var(--fm);font-size:1.2rem;color:var(--ac)}
+.detail-ov{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);z-index:1600;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:all .3s}
+.detail-ov.on{opacity:1;visibility:visible}
+.detail-box{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);width:100%;max-width:460px;max-height:80vh;overflow-y:auto;transform:translateY(20px) scale(.97);transition:transform .35s cubic-bezier(.25,.46,.45,.94);padding:28px;position:relative}
+.detail-ov.on .detail-box{transform:translateY(0) scale(1)}
+.detail-close{position:absolute;top:16px;right:16px;width:34px;height:34px;border:1px solid var(--bd);border-radius:8px;background:transparent;color:var(--tm);cursor:pointer;font-size:1.05rem;display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:2}
+.detail-close:hover{border-color:var(--tm);color:var(--tx)}
+.detail-glass{display:flex;justify-content:center;margin-bottom:12px}
+.detail-name{font-family:var(--fd);font-size:1.5rem;font-weight:700;text-align:center}
+.detail-en{font-family:var(--fm);font-size:.76rem;color:var(--td);text-align:center;margin-bottom:12px}
+.detail-badges{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+.detail-price{font-family:var(--fm);font-size:1rem;color:var(--ac);text-align:center;margin-bottom:12px}
+.detail-desc{font-size:.88rem;color:var(--tm);line-height:1.8;text-align:center;margin-bottom:20px}
+.detail-order{display:block;width:100%;padding:12px;background:var(--ac);border:none;border-radius:var(--r);color:var(--bg);font-family:var(--fd);font-weight:600;font-size:.92rem;cursor:pointer;transition:all .25s;letter-spacing:.08em;margin-top:12px}
+.detail-order:hover{background:var(--al);box-shadow:0 4px 16px var(--ag)}
+.detail-order.ordered{background:var(--ok)}
 
 </style>
 </head>
@@ -252,7 +268,13 @@ h1 span{color:var(--ac)}
 </div>
 
 <div class="toast" id="toast"></div>
-<!-- 转盘按钮 -->
+<!-- 详情弹窗 -->
+<div class="detail-ov" id="detailOv">
+  <div class="detail-box">
+    <button class="detail-close" onclick="closeDetail()">&times;</button>
+    <div id="detailContent"></div>
+  </div>
+</div>
 
 <!-- 转盘弹窗 -->
 <div class="wheel-ov" id="wheelOv">
@@ -419,6 +441,12 @@ function renderMenu(){
         '<button class="order-btn'+(ordered?' ordered':'')+'" data-id="'+c.id+'">'+(ordered?'已选择':'点单')+'</button>'+
       '</div>';
   }).join('');
+  gr.querySelectorAll('.card').forEach(function(card){
+    card.addEventListener('click',function(e){
+      if(e.target.closest('.order-btn'))return;
+      showDetail(card.dataset.id);
+    });
+  });
 
   gr.querySelectorAll('.order-btn').forEach(function(btn){
     btn.addEventListener('click',function(e){
@@ -738,6 +766,32 @@ function wheelOrder(id){
     toggleOrder(id);
     showWheelResult(C.find(function(c){return c.id===id}));
 }
+/* ===== 卡片详情 ===== */
+function showDetail(id){
+  var c=C.find(function(x){return x.id===id});
+  if(!c)return;
+  var catObj=findCat(c.cat);
+  var catLabel=catObj?catObj.emoji+' '+catObj.name:c.cat;
+  var strLabels={light:'轻度 Light',medium:'中度 Medium',strong:'强烈 Strong'};
+  var glassObj=GLASSES[c.g]||{};
+  var ordered=orders.indexOf(c.id)>=0;
+  document.getElementById('detailContent').innerHTML=
+    '<div class="detail-glass">'+renderGlassSvg(c.g,70)+'</div>'+
+    '<div class="detail-name">'+c.name+'</div>'+
+    '<div class="detail-en">'+(c.nameEn||'')+'</div>'+
+    '<div class="detail-badges">'+
+      '<span class="badge cat">'+catLabel+'</span>'+
+      '<span class="badge '+(c.str==='light'?'light':c.str==='strong'?'strong':'medium')+'">'+(strLabels[c.str]||c.str)+'</span>'+
+      (glassObj.n?'<span class="badge glass">'+glassObj.n+'</span>':'')+
+    '</div>'+
+    (PRICES[c.id]?'<div class="detail-price">¥'+PRICES[c.id]+'</div>':'')+
+    '<div class="detail-desc">'+(c.desc||'暂无描述')+'</div>'+
+    '<button class="detail-order'+(ordered?' ordered':'')+'" onclick="detailOrder(\''+c.id+'\')">'+(ordered?'已选择':'点单')+'</button>';
+  document.getElementById('detailOv').classList.add('on');
+}
+function closeDetail(){document.getElementById('detailOv').classList.remove('on')}
+function detailOrder(id){toggleOrder(id);showDetail(id)}
+document.getElementById('detailOv').addEventListener('click',function(e){if(e.target===this)closeDetail()});
 
 </script>
 </body>

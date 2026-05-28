@@ -138,11 +138,10 @@ h1 span{color:var(--ac)}
 .search-clear.show{display:flex}
 .search-clear:hover{color:var(--ac);background:var(--s2)}
 /* 转盘按钮 */
-.wheel-trigger{width:44px;height:44px;border-radius:var(--r);background:var(--sf);border:1px solid var(--bd);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s;flex-shrink:0;padding:0;overflow:hidden}
-.wheel-trigger:hover{border-color:var(--ac);box-shadow:0 0 12px var(--ag)}
-.wheel-trigger:active{transform:scale(.95)}
-.wheel-trigger svg{transition:filter .3s}
-.wheel-trigger:hover svg{filter:drop-shadow(0 0 6px rgba(201,162,39,.5))}
+.wheel-trigger{display:flex;align-items:center;gap:5px;padding:11px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);color:var(--tm);font-family:var(--fb);font-size:.82rem;cursor:pointer;white-space:nowrap;transition:all .25s;flex-shrink:0}
+.wheel-trigger:hover{border-color:var(--ac);color:var(--ac);background:var(--s2)}
+.wheel-trigger:active{transform:scale(.97)}
+.wheel-trigger svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 
 /* 转盘弹窗 */
 .wheel-ov{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);z-index:1500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:all .3s}
@@ -195,16 +194,19 @@ h1 span{color:var(--ac)}
     <h1><span>Alchemist</span></h1>
     <div class="sub-line">选择你的鸡尾酒</div>
   </header>
-<div style="display:flex;gap:10px;align-items:center;max-width:500px;margin:0 auto 16px">
+<div style="display:flex;gap:10px;align-items:stretch;max-width:500px;margin:0 auto 16px">
   <div class="search-wrap" style="flex:1;min-width:0">
     <input type="text" id="menuSearch" placeholder="搜索鸡尾酒名称、基酒、描述..." />
     <button class="search-clear" id="searchClear">&times;</button>
   </div>
+  <button class="wheel-trigger" id="wheelTrigger" title="随机选择">...</button>
+</div>
 <button class="wheel-trigger" id="wheelTrigger" title="随机选择">
-<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="rgba(201,162,39,.65)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M21.5 2v6h-6"/>
   <path d="M21.34 15.57a10 10 0 1 1-.57-8.38"/>
 </svg>
+随机转盘
 </button>
 </div>
   <div class="filter-bar" id="filterBar"></div>
@@ -617,6 +619,8 @@ function drawWheel(){
 
     var n=wData.length;
     var sliceAngle=Math.PI*2/n;
+    var showText=n<=12;
+    var fontSize=n<=8?20:n<=12?14:0;
 
     for(var i=0;i<n;i++){
         var startAngle=i*sliceAngle-Math.PI/2+wRot;
@@ -627,18 +631,30 @@ function drawWheel(){
         ctx.fillStyle=i%2===0?GC.fk:GC.bf;ctx.fill();
         ctx.strokeStyle=GC.sk;ctx.lineWidth=1.5;ctx.stroke();
 
-        ctx.save();ctx.translate(cx,cy);
-        var midAngle=startAngle+sliceAngle/2;
-        ctx.rotate(midAngle);
-        ctx.fillStyle='#f0ece4';
-        ctx.font='bold 20px "Noto Serif SC"';
-        ctx.textAlign='center';ctx.textBaseline='middle';
-        var name=wData[i].name;
-        var maxLen=Math.max(4,Math.floor(r*0.35/10));
-        if(name.length>maxLen)name=name.slice(0,maxLen)+'…';
-        ctx.fillText(name,r*0.55,0);
-        ctx.restore();
+        if(showText){
+            ctx.save();ctx.translate(cx,cy);
+            var midAngle=startAngle+sliceAngle/2;
+            ctx.rotate(midAngle);
+            ctx.fillStyle='#f0ece4';
+            ctx.font='bold '+fontSize+'px "Noto Serif SC"';
+            ctx.textAlign='center';ctx.textBaseline='middle';
+            var name=wData[i].name;
+            var maxLen=n<=8?6:n<=12?4:3;
+            if(name.length>maxLen)name=name.slice(0,maxLen)+'…';
+            ctx.fillText(name,r*0.55,0);
+            ctx.restore();
+        }
     }
+
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.strokeStyle=GC.sk;ctx.lineWidth=2.5;ctx.stroke();
+
+    ctx.beginPath();ctx.arc(cx,cy,18,0,Math.PI*2);
+    ctx.fillStyle='#151210';ctx.fill();
+    ctx.strokeStyle=GC.sk;ctx.lineWidth=2;ctx.stroke();
+    ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);
+    ctx.fillStyle=GC.sk;ctx.fill();
+}
 
     /* 外圈 */
     ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);

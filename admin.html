@@ -168,6 +168,7 @@ h1 span{color:var(--ac)}
       <button class="act-btn" onclick="completeAll()">全部完成</button>
       <button class="act-btn danger" onclick="clearDone()">清除已完成</button>
       <button class="act-btn" onclick="openPriceMgr()">管理价格</button>
+<button class="act-btn" onclick="openHideMgr()">管理酒单</button>
     </div>
     <span style="font-family:var(--fm);font-size:.68rem;color:var(--td)" id="autoInfo">每 10 秒自动刷新</span>
   </div>
@@ -217,6 +218,23 @@ h1 span{color:var(--ac)}
     </div>
   </div>
 </div>
+<!-- 酒单管理弹窗 -->
+<div class="ov" id="hideOv">
+  <div class="mdl">
+    <div class="mh"><h2>管理酒单</h2><button class="mc" onclick="closeHideMgr()">&times;</button></div>
+    <div class="mb">
+      <div style="font-family:var(--fm);font-size:.72rem;color:var(--tm);margin-bottom:14px;line-height:1.6">隐藏的鸡尾酒不会出现在客人点单页面。绿色=上架中，红色=已隐藏</div>
+      <div style="position:relative;margin-bottom:14px">
+        <input id="hideSearch" placeholder="搜索配方..." style="width:100%;padding:10px 14px 10px 36px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:var(--fb);font-size:.88rem;outline:none" />
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--td);font-size:1.1rem;pointer-events:none">🔍</span>
+      </div>
+      <div id="hideList" style="max-height:55vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--s3) var(--sf)"></div>
+      <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px;padding-top:16px;border-top:1px solid var(--bd)">
+        <button class="bc" onclick="closeHideMgr()">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -230,7 +248,7 @@ var GLASSES = {};
 var orders = [];
 var cocktailsMap = {};
 var PRICES = {};
-var PRICES = {};
+var HIDDEN = {};
 var activeFilter = 'pending';
 var _lastOrderCount = 0;
 var _refreshTimer = null;
@@ -270,6 +288,8 @@ async function loadData() {
       if (parsed.glasses) GLASSES = parsed.glasses;
 var pf = data.files['alchemist-prices.json'];
 if (pf) { try { PRICES = JSON.parse(pf.content); } catch (e) {} }
+var hf = data.files['alchemist-hidden.json'];
+if (hf) { try { HIDDEN = JSON.parse(hf.content); } catch (e) {} }
       return true;
     }
   } catch (e) { console.log(e); }
@@ -453,6 +473,16 @@ async function savePrices() {
             body: JSON.stringify({ files: { 'alchemist-prices.json': { content: JSON.stringify(PRICES, null, 2) } } })
         });
     } catch (e) { console.log('价格保存失败', e); }
+}
+async function saveHidden() {
+    if (!GIST_TOKEN || !GIST_ID) return;
+    try {
+        await fetch('https://api.github.com/gists/' + GIST_ID, {
+            method: 'PATCH',
+            headers: { 'Authorization': 'token ' + GIST_TOKEN, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ files: { 'alchemist-hidden.json': { content: JSON.stringify(HIDDEN, null, 2) } } })
+        });
+    } catch (e) { console.log('保存失败', e); }
 }
 function editOrderPrices(orderId) {
     var o = orders.find(function(x) { return x.id === orderId; });
@@ -638,6 +668,57 @@ function batchSavePrices() {
     savePrices();
     closePriceMgr();
     showToast('价格已保存');
+}
+function openHideMgr() {
+    renderHideList();
+    document.getElementById('hideOv').classList.add('on');
+    document.getElementById('hideSearch').value = '';
+    document.getElementById('hideSearch').oninput = function () {
+        renderHideList(this.value.trim());
+    };
+}
+
+function closeHideMgr() {
+    document.getElementById('hideOv').classList.remove('on');
+}
+
+function renderHideList(keyword) {
+    var el = document.getElementById('hideList');
+    var list = C;
+    if (keyword) {
+        var q = keyword.toLowerCase();
+        list = C.filter(function (c) {
+            return c.name.toLowerCase().indexOf(q) >= 0 ||
+                (c.nameEn || '').toLowerCase().indexOf(q) >= 0;
+        });
+    }
+    if (!list.length) {
+        el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--td);font-size:.85rem">没有找到配方</div>';
+        return;
+    }
+    el.innerHTML = list.map(function (c) {
+        var isHidden = HIDDEN[c.id];
+        return '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg);border:1px solid ' + (isHidden ? 'rgba(179,64,64,.3)' : 'rgba(90,154,90,.3)') + ';border-radius:var(--r);margin-bottom:6px;transition:all .2s">' +
+            '<div style="flex:1;min-width:0">' +
+            '<div style="font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + c.name + '</div>' +
+            '<div style="font-family:var(--fm);font-size:.66rem;color:var(--td)">' + (c.nameEn || '') + '</div>' +
+            '</div>' +
+            '<span style="font-family:var(--fm);font-size:.66rem;padding:3px 10px;border-radius:20px;border:1px solid ' + (isHidden ? 'rgba(179,64,64,.3)' : 'rgba(90,154,90,.3)') + ';color:' + (isHidden ? 'var(--dg)' : 'var(--ok)') + ';background:' + (isHidden ? 'rgba(179,64,64,.06)' : 'rgba(90,154,90,.06)') + '">' + (isHidden ? '已隐藏' : '上架中') + '</span>' +
+            '<button class="act-btn" style="padding:5px 12px;font-size:.7rem" onclick="toggleHide(\'' + c.id + '\')">' + (isHidden ? '上架' : '隐藏') + '</button>' +
+            '</div>';
+    }).join('');
+}
+
+async function toggleHide(id) {
+    if (HIDDEN[id]) {
+        delete HIDDEN[id];
+        showToast('已上架');
+    } else {
+        HIDDEN[id] = true;
+        showToast('已隐藏');
+    }
+    await saveHidden();
+    renderHideList(document.getElementById('hideSearch').value.trim());
 }
 
 </script>

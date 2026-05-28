@@ -312,6 +312,7 @@ var CATS=[];
 var SL={light:'轻度 Light',medium:'中度 Medium',strong:'强烈 Strong'};
 var orders=[];
 var PRICES={};
+var HIDDEN={};
 var activeFilter='all';
 var GIST_TOKEN=localStorage.getItem('alchemist_gist_token')||'';
 var GIST_ID=localStorage.getItem('alchemist_gist_id')||'';
@@ -321,6 +322,7 @@ async function init(){
   var loaded=await loadFromGist();
   if(!loaded){showToast('无法加载菜单数据，请刷新重试');return}
   await loadPrices();
+  await loadHidden();
   renderFilters();
   renderMenu();
 }
@@ -368,6 +370,17 @@ async function loadPrices(){
     if(pf){PRICES=JSON.parse(pf.content)}
   }catch(e){console.log(e)}
 }
+async function loadHidden(){
+  if(!GIST_TOKEN||!GIST_ID)return;
+  try{
+    var res=await fetch('https://api.github.com/gists/'+GIST_ID,{
+      headers:{'Authorization':'token '+GIST_TOKEN}
+    });
+    var data=await res.json();
+    var hf=data.files['alchemist-hidden.json'];
+    if(hf){HIDDEN=JSON.parse(hf.content)}
+  }catch(e){console.log(e)}
+}
 
 async function savePrices(){
   if(!GIST_TOKEN||!GIST_ID)return;
@@ -406,6 +419,7 @@ function renderMenu(){
   var q=(document.getElementById('menuSearch').value||'').toLowerCase().trim();
   var list=C.filter(function(c){
     if(activeFilter!=='all'&&c.cat!==activeFilter)return false;
+    if(HIDDEN[c.id])return false;
     if(q){
       var haystack=[
         c.name,
@@ -709,6 +723,7 @@ function updateWheelData(){
   wData=C.filter(function(c){
     if(cat&&c.cat!==cat)return false;
     if(str&&c.str!==str)return false;
+    if(HIDDEN[c.id])return false;
     return true;
   });
   document.getElementById('wCnt').textContent=wData.length+' 款';

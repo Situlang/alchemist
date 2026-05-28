@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>吧台管理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Noto+Serif+SC:wght@300;400;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0907;--sf:#151210;--s2:#1e1a16;--s3:#272219;
+  --ac:#c9a227;--ag:#c9a22744;--al:#e8c547;
+  --tx:#f0ece4;--tm:#8a8279;--td:#5a554e;--dg:#b34040;
+  --ok:#5a9a5a;--bd:#2a2520;
+  --r:8px;--rl:16px;
+  --fd:'Playfair Display','Noto Serif SC',serif;
+  --fb:'Noto Serif SC','Playfair Display',serif;
+  --fm:'DM Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--bg);color:var(--tx);min-height:100vh;line-height:1.7;font-weight:300}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 15% 20%,#1a0f05,transparent 50%),radial-gradient(ellipse at 85% 80%,#0f0a14,transparent 50%);pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 24px}
+
+header{padding:36px 0 20px;text-align:center}
+header::after{content:'';display:block;width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--ac),transparent);margin:14px auto 0}
+h1{font-family:var(--fd);font-weight:900;font-size:clamp(1.5rem,4vw,2.2rem);letter-spacing:.08em;text-transform:uppercase}
+h1 span{color:var(--ac)}
+.sub-line{font-family:var(--fm);font-size:.72rem;color:var(--tm);letter-spacing:.2em;text-transform:uppercase;margin-top:4px}
+
+/* 状态栏 */
+.status-bar{display:flex;gap:12px;margin:16px 0 20px;flex-wrap:wrap}
+.stat-card{flex:1;min-width:100px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;text-align:center}
+.stat-num{font-family:var(--fd);font-size:1.8rem;font-weight:700;color:var(--ac)}
+.stat-label{font-family:var(--fm);font-size:.62rem;color:var(--td);letter-spacing:.1em;text-transform:uppercase}
+
+/* 操作栏 */
+.actions-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.actions-bar .left{flex:1;display:flex;gap:10px;flex-wrap:wrap}
+.act-btn{padding:8px 18px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);color:var(--tm);font-family:var(--fb);font-size:.82rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.act-btn:hover{border-color:var(--ac);color:var(--ac)}
+.act-btn.primary{background:var(--ac);border-color:var(--ac);color:var(--bg);font-family:var(--fd);font-weight:600}
+.act-btn.primary:hover{background:var(--al);box-shadow:0 4px 16px var(--ag)}
+.act-btn.danger{border-color:rgba(179,64,64,.3);color:var(--dg)}
+.act-btn.danger:hover{background:rgba(179,64,64,.1)}
+
+/* 筛选 */
+.filter-bar{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.filter-btn{padding:7px 16px;background:var(--sf);border:1px solid var(--bd);border-radius:100px;color:var(--tm);font-family:var(--fb);font-size:.8rem;cursor:pointer;transition:all .25s;white-space:nowrap}
+.filter-btn:hover{border-color:var(--td);color:var(--tx)}
+.filter-btn.on{background:var(--ac);border-color:var(--ac);color:var(--bg)}
+
+/* 订单列表 */
+.orders{display:flex;flex-direction:column;gap:16px;padding-bottom:40px}
+.order-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);padding:20px 24px;opacity:0;animation:ci .4s ease forwards;transition:all .3s}
+.order-card:nth-child(1){animation-delay:0s}
+.order-card:nth-child(2){animation-delay:.05s}
+.order-card:nth-child(3){animation-delay:.1s}
+@keyframes ci{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.order-card.pending{border-left:3px solid var(--ac)}
+.order-card.done{border-left:3px solid var(--ok);opacity:.6}
+.order-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.order-id{font-family:var(--fm);font-size:.72rem;color:var(--td)}
+.order-time{font-family:var(--fm);font-size:.72rem;color:var(--td)}
+.order-status{font-family:var(--fm);font-size:.66rem;padding:3px 10px;border-radius:20px}
+.order-status.pending{color:var(--ac);border:1px solid rgba(201,162,39,.3);background:rgba(201,162,39,.06)}
+.order-status.done{color:var(--ok);border:1px solid rgba(90,154,90,.3);background:rgba(90,154,90,.06)}
+
+.order-items{list-style:none;margin-bottom:16px}
+.order-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #1a1714}
+.order-item:last-child{border-bottom:none}
+.order-item-dot{width:6px;height:6px;border-radius:50%;background:var(--ac);flex-shrink:0}
+.order-item-name{font-size:.92rem;flex:1}
+.order-item-en{font-family:var(--fm);font-size:.68rem;color:var(--td)}
+
+.order-actions{display:flex;gap:8px;justify-content:flex-end}
+.order-actions .act-btn{padding:6px 16px;font-size:.76rem}
+
+/* 空状态 */
+.empty{text-align:center;padding:80px 20px}
+.empty p{color:var(--td);font-family:var(--fm);font-size:.85rem;margin-top:10px}
+.empty-icon{font-size:3rem;opacity:.3;margin-bottom:12px}
+
+/* 配方详情弹窗 */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:all .3s}
+.ov.on{opacity:1;visibility:visible}
+.mdl{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);width:100%;max-width:500px;max-height:80vh;overflow-y:auto;transform:translateY(20px) scale(.97);transition:transform .35s cubic-bezier(.25,.46,.45,.94)}
+.ov.on .mdl{transform:translateY(0) scale(1)}
+.mh{padding:22px 26px 0;display:flex;justify-content:space-between;align-items:center}
+.mh h2{font-family:var(--fd);font-size:1.2rem;font-weight:700}
+.mc{width:36px;height:36px;border:1px solid var(--bd);border-radius:8px;background:transparent;color:var(--tm);cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.mc:hover{border-color:var(--tm);color:var(--tx)}
+.mb{padding:18px 26px 24px}
+
+.recipe-name{font-family:var(--fd);font-size:1.5rem;font-weight:700;text-align:center}
+.recipe-en{font-family:var(--fm);font-size:.76rem;color:var(--td);text-align:center;margin-bottom:16px}
+.recipe-meta{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.recipe-badge{font-family:var(--fm);font-size:.66rem;padding:4px 14px;border-radius:20px;border:1px solid var(--bd);color:var(--tm)}
+.recipe-section{margin-bottom:14px}
+.recipe-section-title{font-family:var(--fm);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ac);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.recipe-list{list-style:none}
+.recipe-list li{display:flex;justify-content:space-between;padding:4px 0;font-size:.86rem;border-bottom:1px solid #1a1714}
+.recipe-list li:last-child{border-bottom:none}
+.recipe-list .amount{font-family:var(--fm);font-size:.76rem;color:var(--ac)}
+.recipe-steps{list-style:none;counter-reset:step}
+.recipe-steps li{counter-increment:step;position:relative;padding:4px 0 4px 32px;font-size:.86rem;color:var(--tm);line-height:1.6}
+.recipe-steps li::before{content:counter(step);position:absolute;left:0;top:4px;width:22px;height:22px;border-radius:50%;border:1px solid var(--ac);color:var(--ac);font-family:var(--fm);font-size:.6rem;display:flex;align-items:center;justify-content:center}
+
+.toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--s2);border:1px solid var(--ac);color:var(--tx);padding:12px 28px;border-radius:var(--r);font-family:var(--fm);font-size:.8rem;z-index:3000;opacity:0;transition:all .35s;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.5);max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* 确认弹窗 */
+.cov{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:all .25s}
+.cov.on{opacity:1;visibility:visible}
+.cbx{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);padding:32px;max-width:380px;width:100%;text-align:center;transform:scale(.95);transition:transform .25s}
+.cov.on .cbx{transform:scale(1)}
+.cbx h3{font-family:var(--fd);font-size:1.1rem;margin-bottom:8px}
+.cbx p{color:var(--tm);font-size:.86rem;margin-bottom:22px}
+.cac{display:flex;gap:12px;justify-content:center}
+.bc{padding:10px 24px;background:transparent;border:1px solid var(--bd);border-radius:var(--r);color:var(--tm);font-family:var(--fb);font-size:.88rem;cursor:pointer;transition:all .2s}
+.bc:hover{border-color:var(--tm);color:var(--tx)}
+.bs{padding:10px 28px;background:var(--ac);border:none;border-radius:var(--r);color:var(--bg);font-family:var(--fd);font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s}
+.bs:hover{background:var(--al);box-shadow:0 4px 16px var(--ag)}
+
+/* 新订单提醒 */
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(201,162,39,.4)}50%{box-shadow:0 0 0 8px rgba(201,162,39,0)}}
+.order-card.new{animation:ci .4s ease forwards,pulse 1.5s ease .4s}
+
+@media(max-width:600px){
+  .app{padding:0 16px}
+  .status-bar{gap:8px}
+  .stat-card{padding:10px 6px}
+  .stat-num{font-size:1.3rem}
+  .order-header{flex-wrap:wrap;gap:6px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1><span>Alchemist</span></h1>
+    <div class="sub-line">吧台管理系统</div>
+  </header>
+
+  <div class="status-bar">
+    <div class="stat-card">
+      <div class="stat-num" id="statPending">0</div>
+      <div class="stat-label">待制作</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statDone">0</div>
+      <div class="stat-label">已完成</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statTotal">0</div>
+      <div class="stat-label">今日总计</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statCups">0</div>
+      <div class="stat-label">杯数</div>
+    </div>
+  </div>
+
+  <div class="actions-bar">
+    <div class="left">
+      <button class="act-btn primary" onclick="refreshOrders()">刷新订单</button>
+      <button class="act-btn" onclick="completeAll()">全部完成</button>
+      <button class="act-btn danger" onclick="clearDone()">清除已完成</button>
+    </div>
+    <span style="font-family:var(--fm);font-size:.68rem;color:var(--td)" id="autoInfo">每 10 秒自动刷新</span>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn on" data-f="pending">待制作</button>
+    <button class="filter-btn" data-f="all">全部</button>
+    <button class="filter-btn" data-f="done">已完成</button>
+  </div>
+
+  <div class="orders" id="ordersEl"></div>
+</div>
+
+<!-- 配方详情弹窗 -->
+<div class="ov" id="recipeOv">
+  <div class="mdl">
+    <div class="mh"><h2>配方详情</h2><button class="mc" onclick="closeRecipe()">&times;</button></div>
+    <div class="mb" id="recipeBody"></div>
+  </div>
+</div>
+
+<!-- 确认弹窗 -->
+<div class="cov" id="cfOv">
+  <div class="cbx">
+    <h3 id="cfTitle">确认</h3>
+    <p id="cfMsg"></p>
+    <div class="cac">
+      <button class="bc" onclick="closeCf()">取消</button>
+      <button class="bs" id="cfOk">确认</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== 数据 ===== */
+var GIST_TOKEN = localStorage.getItem('alchemist_gist_token') || '';
+var GIST_ID = localStorage.getItem('alchemist_gist_id') || '';
+var C = [];
+var CATS = [];
+var GLASSES = {};
+var orders = [];
+var cocktailsMap = {};
+var activeFilter = 'pending';
+var _lastOrderCount = 0;
+var _refreshTimer = null;
+
+/* ===== 初始化 ===== */
+async function init() {
+  var loaded = await loadData();
+  if (!loaded) {
+    showToast('无法加载数据，请检查同步设置');
+    return;
+  }
+  buildMap();
+  setupFilters();
+  await refreshOrders();
+  startAutoRefresh();
+}
+
+function buildMap() {
+  cocktailsMap = {};
+  C.forEach(function(c) { cocktailsMap[c.id] = c; });
+}
+
+/* ===== 从 Gist 加载配方数据 ===== */
+async function loadData() {
+  if (!GIST_TOKEN || !GIST_ID) return false;
+  try {
+    var res = await fetch('https://api.github.com/gists/' + GIST_ID, {
+      headers: { 'Authorization': 'token ' + GIST_TOKEN }
+    });
+    if (!res.ok) return false;
+    var data = await res.json();
+    var content = data.files['alchemist-data.json'].content;
+    var parsed = JSON.parse(content);
+    if (parsed.cocktails) {
+      C = parsed.cocktails;
+      if (parsed.categories) CATS = parsed.categories;
+      if (parsed.glasses) GLASSES = parsed.glasses;
+      return true;
+    }
+  } catch (e) { console.log(e); }
+  return false;
+}
+
+/* ===== 从 Gist 加载订单 ===== */
+async function refreshOrders() {
+  if (!GIST_TOKEN || !GIST_ID) return;
+  try {
+    var res = await fetch('https://api.github.com/gists/' + GIST_ID, {
+      headers: { 'Authorization': 'token ' + GIST_TOKEN }
+    });
+    if (!res.ok) return;
+    var data = await res.json();
+    var content = data.files['alchemist-data.json'].content;
+    var parsed = JSON.parse(content);
+    orders = parsed.orders || [];
+
+    /* 检测新订单 */
+    var pendingCount = orders.filter(function(o) { return o.status === 'pending'; }).length;
+    if (pendingCount > _lastOrderCount && _lastOrderCount > 0) {
+      showToast('有新订单！');
+      playSound();
+    }
+    _lastOrderCount = pendingCount;
+
+    updateStats();
+    renderOrders();
+  } catch (e) { console.log('刷新失败', e); }
+}
+
+/* ===== 自动刷新 ===== */
+function startAutoRefresh() {
+  _refreshTimer = setInterval(refreshOrders, 10000);
+}
+
+/* ===== 统计 ===== */
+function updateStats() {
+  var pending = 0, done = 0, cups = 0;
+  orders.forEach(function(o) {
+    if (o.status === 'pending') pending++;
+    else done++;
+    cups += o.items.length;
+  });
+  document.getElementById('statPending').textContent = pending;
+  document.getElementById('statDone').textContent = done;
+  document.getElementById('statTotal').textContent = orders.length;
+  document.getElementById('statCups').textContent = cups;
+}
+
+/* ===== 渲染订单 ===== */
+function renderOrders() {
+  var el = document.getElementById('ordersEl');
+  var filtered = orders.filter(function(o) {
+    if (activeFilter === 'all') return true;
+    return o.status === activeFilter;
+  });
+
+  /* 新订单在前，然后按时间倒序 */
+  filtered.sort(function(a, b) {
+    if (a.status === 'pending' && b.status !== 'pending') return -1;
+    if (a.status !== 'pending' && b.status === 'pending') return 1;
+    return b.id.localeCompare(a.id);
+  });
+
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">🍸</div><p>' +
+      (activeFilter === 'pending' ? '暂无待制作订单' : '暂无订单') + '</p></div>';
+    return;
+  }
+
+  el.innerHTML = filtered.map(function(o, i) {
+    var statusLabel = o.status === 'pending' ? '待制作' : '已完成';
+    var statusClass = o.status === 'pending' ? 'pending' : 'done';
+    var isNew = o.status === 'pending' && o._new;
+    var itemsHtml = o.items.map(function(item) {
+      var c = cocktailsMap[item.id];
+      return '<li class="order-item">' +
+        '<span class="order-item-dot"></span>' +
+        '<span class="order-item-name">' + item.name +
+        (item.nameEn ? '<span class="order-item-en"> ' + item.nameEn + '</span>' : '') +
+        '</span>' +
+        '<button class="act-btn" style="padding:3px 10px;font-size:.66rem" onclick="showRecipe(\'' + item.id + '\')">配方</button>' +
+        '</li>';
+    }).join('');
+
+    return '<div class="order-card ' + statusClass + (isNew ? ' new' : '') + '" style="animation-delay:' + (i * .05) + 's">' +
+      '<div class="order-header">' +
+        '<span class="order-id">#' + o.id.replace('order_', '').slice(-6) + '</span>' +
+        '<span class="order-time">' + o.time + '</span>' +
+        '<span class="order-status ' + statusClass + '">' + statusLabel + '</span>' +
+      '</div>' +
+      '<ul class="order-items">' + itemsHtml + '</ul>' +
+      '<div class="order-actions">' +
+        (o.status === 'pending' ?
+          '<button class="act-btn primary" style="padding:6px 16px;font-size:.76rem" onclick="completeOrder(\'' + o.id + '\')">完成制作</button>' : '') +
+        '<button class="act-btn danger" style="padding:6px 16px;font-size:.76rem" onclick="removeOrder(\'' + o.id + '\')">删除</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+/* ===== 筛选 ===== */
+function setupFilters() {
+  document.querySelectorAll('.filter-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('on'); });
+      btn.classList.add('on');
+      activeFilter = btn.dataset.f;
+      renderOrders();
+    });
+  });
+}
+
+/* ===== 完成订单 ===== */
+async function completeOrder(id) {
+  orders.forEach(function(o) {
+    if (o.id === id) o.status = 'done';
+  });
+  await saveOrders();
+  updateStats();
+  renderOrders();
+  showToast('订单已完成');
+}
+
+/* ===== 全部完成 ===== */
+async function completeAll() {
+  var pending = orders.filter(function(o) { return o.status === 'pending'; });
+  if (!pending.length) { showToast('没有待完成的订单'); return; }
+  showCf('全部完成', '确认将 ' + pending.length + ' 个订单全部标记为完成？', async function() {
+    orders.forEach(function(o) {
+      if (o.status === 'pending') o.status = 'done';
+    });
+    await saveOrders();
+    updateStats();
+    renderOrders();
+    showToast('全部订单已完成');
+  });
+}
+
+/* ===== 清除已完成 ===== */
+async function clearDone() {
+  var done = orders.filter(function(o) { return o.status === 'done'; });
+  if (!done.length) { showToast('没有已完成的订单'); return; }
+  showCf('清除已完成', '确认删除 ' + done.length + ' 个已完成订单？此操作不可撤销。', async function() {
+    orders = orders.filter(function(o) { return o.status !== 'done'; });
+    await saveOrders();
+    updateStats();
+    renderOrders();
+    showToast('已清除');
+  });
+}
+
+/* ===== 删除单个订单 ===== */
+async function removeOrder(id) {
+  showCf('删除订单', '确认删除此订单？', async function() {
+    orders = orders.filter(function(o) { return o.id !== id; });
+    await saveOrders();
+    updateStats();
+    renderOrders();
+    showToast('已删除');
+  });
+}
+
+/* ===== 保存订单到 Gist ===== */
+async function saveOrders() {
+  if (!GIST_TOKEN || !GIST_ID) return;
+  try {
+    var res = await fetch('https://api.github.com/gists/' + GIST_ID, {
+      headers: { 'Authorization': 'token ' + GIST_TOKEN }
+    });
+    var gistData = await res.json();
+    var content = gistData.files['alchemist-data.json'].content;
+    var parsed = JSON.parse(content);
+    parsed.orders = orders;
+
+    await fetch('https://api.github.com/gists/' + GIST_ID, {
+      method: 'PATCH',
+      headers: { 'Authorization': 'token ' + GIST_TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files: { 'alchemist-data.json': { content: JSON.stringify(parsed, null, 2) } } })
+    });
+  } catch (e) { console.log('保存失败', e); }
+}
+
+/* ===== 查看配方详情 ===== */
+function showRecipe(id) {
+  var c = cocktailsMap[id];
+  if (!c) { showToast('找不到配方'); return; }
+  var catObj = findCat(c.cat);
+  var catLabel = catObj ? catObj.emoji + ' ' + catObj.name : c.cat;
+  var glassObj = GLASSES[c.g] || {};
+  var sl = { light: '轻度', medium: '中度', strong: '强烈' };
+
+  var ingHtml = c.ing.map(function(i) {
+    return '<li><span>' + i.n + '</span><span class="amount">' + i.a + '</span></li>';
+  }).join('');
+
+  var stpHtml = c.stp ? c.stp.map(function(s) {
+    return '<li>' + s + '</li>';
+  }).join('') : '';
+
+  document.getElementById('recipeBody').innerHTML =
+    '<div class="recipe-name">' + c.name + '</div>' +
+    '<div class="recipe-en">' + (c.nameEn || '') + '</div>' +
+    '<div class="recipe-meta">' +
+      '<span class="recipe-badge">' + catLabel + '</span>' +
+      '<span class="recipe-badge">' + (sl[c.str] || c.str) + '</span>' +
+      (glassObj.n ? '<span class="recipe-badge">' + glassObj.n + '</span>' : '') +
+    '</div>' +
+    '<div class="recipe-section"><div class="recipe-section-title">材料 Ingredients</div>' +
+      '<ul class="recipe-list">' + ingHtml + '</ul></div>' +
+    (stpHtml ? '<div class="recipe-section"><div class="recipe-section-title">步骤 Steps</div>' +
+      '<ol class="recipe-steps">' + stpHtml + '</ol></div>' : '');
+
+  document.getElementById('recipeOv').classList.add('on');
+}
+
+function closeRecipe() {
+  document.getElementById('recipeOv').classList.remove('on');
+}
+
+function findCat(key) {
+  for (var i = 0; i < CATS.length; i++) { if (CATS[i].key === key) return CATS[i]; }
+  return null;
+}
+
+/* ===== 确认弹窗 ===== */
+function showCf(title, msg, onOk) {
+  document.getElementById('cfTitle').textContent = title;
+  document.getElementById('cfMsg').textContent = msg;
+  var okBtn = document.getElementById('cfOk');
+  var newBtn = okBtn.cloneNode(true);
+  okBtn.parentNode.replaceChild(newBtn, okBtn);
+  newBtn.id = 'cfOk';
+  newBtn.addEventListener('click', function() { onOk(); closeCf(); });
+  document.getElementById('cfOv').classList.add('on');
+}
+function closeCf() { document.getElementById('cfOv').classList.remove('on'); }
+
+/* ===== 提示 ===== */
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  setTimeout(function() { t.classList.remove('on'); }, 2500);
+}
+
+/* ===== 新订单提示音 ===== */
+function playSound() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 800;
+    osc.type = 'sine';
+    gain.gain.value = 0.3;
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.stop(ctx.currentTime + 0.5);
+  } catch (e) {}
+}
+
+/* ===== 启动 ===== */
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>

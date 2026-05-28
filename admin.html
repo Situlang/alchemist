@@ -306,7 +306,6 @@ function renderOrders() {
     return o.status === activeFilter;
   });
 
-  /* 新订单在前，然后按时间倒序 */
   filtered.sort(function(a, b) {
     if (a.status === 'pending' && b.status !== 'pending') return -1;
     if (a.status !== 'pending' && b.status === 'pending') return 1;
@@ -324,7 +323,6 @@ function renderOrders() {
     var statusClass = o.status === 'pending' ? 'pending' : 'done';
     var isNew = o.status === 'pending' && o._new;
     var itemsHtml = o.items.map(function(item) {
-      var c = cocktailsMap[item.id];
       var itemPrice = PRICES[item.id];
       return '<li class="order-item">' +
         '<span class="order-item-dot"></span>' +
@@ -335,6 +333,21 @@ function renderOrders() {
         '<button class="act-btn" style="padding:3px 10px;font-size:.66rem" onclick="showRecipe(\'' + item.id + '\')">配方</button>' +
         '</li>';
     }).join('');
+
+    return '<div class="order-card ' + statusClass + (isNew ? ' new' : '') + '" style="animation-delay:' + (i * .05) + 's">' +
+      '<div class="order-header">' +
+        '<span class="order-id">#' + o.id.replace('order_', '').slice(-6) + '</span>' +
+        '<span class="order-time">' + o.time + '</span>' +
+        '<span class="order-status ' + statusClass + '">' + statusLabel + '</span>' +
+      '</div>' +
+      '<ul class="order-items">' + itemsHtml + '</ul>' +
+      '<div class="order-actions">' +
+        (o.status === 'pending' ?
+          '<button class="act-btn primary" style="padding:6px 16px;font-size:.76rem" onclick="completeOrder(\'' + o.id + '\')">完成制作</button>' : '') +
+        '<button class="act-btn danger" style="padding:6px 16px;font-size:.76rem" onclick="removeOrder(\'' + o.id + '\')">删除</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
 /* ===== 筛选 ===== */

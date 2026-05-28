@@ -209,6 +209,11 @@ h1 span{color:var(--ac)}
 .detail-order{display:block;width:100%;padding:12px;background:var(--ac);border:none;border-radius:var(--r);color:var(--bg);font-family:var(--fd);font-weight:600;font-size:.92rem;cursor:pointer;transition:all .25s;letter-spacing:.08em;margin-top:12px}
 .detail-order:hover{background:var(--al);box-shadow:0 4px 16px var(--ag)}
 .detail-order.ordered{background:var(--ok)}
+.qty-bar{display:flex;align-items:center;justify-content:center;gap:0;width:100%;background:var(--ac);border-radius:var(--r);overflow:hidden;height:46px}
+.qty-btn{flex:1;height:100%;background:transparent;border:none;color:var(--bg);font-family:var(--fd);font-size:1.2rem;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.qty-btn:hover{background:rgba(0,0,0,.15)}
+.qty-btn:active{background:rgba(0,0,0,.25)}
+.qty-num{font-family:var(--fd);font-size:1.1rem;font-weight:700;color:var(--bg);min-width:40px;text-align:center}
 
 </style>
 </head>
@@ -426,7 +431,8 @@ function renderMenu(){
     var glassObj=GLASSES[c.g]||{};
     var glassLabel=glassObj.n||'';
     var glassSvg=renderGlassSvg(c.g,48);
-    var ordered=orders.indexOf(c.id)>=0;
+var qty=getOrderQty(c.id);
+var ordered=qty>0;
       return '<div class="card" data-id="'+c.id+'" style="animation-delay:'+Math.min(i*.04,.3)+'s">'+
         '<div class="card-glass">'+glassSvg+'</div>'+
         '<div class="card-badges">'+
@@ -438,13 +444,33 @@ function renderMenu(){
         '<div class="card-en">'+(c.nameEn||'')+'</div>'+
         (PRICES[c.id]?'<div class="card-price">¥ <span>'+PRICES[c.id]+'</span></div>':'')+
         '<div class="card-desc">'+(c.desc||'')+'</div>'+
-        '<button class="order-btn'+(ordered?' ordered':'')+'" data-id="'+c.id+'">'+(ordered?'已选择':'点单')+'</button>'+
+(ordered?
+  '<div class="qty-bar" data-id="'+c.id+'">'+
+    '<button class="qty-btn qty-minus" data-id="'+c.id+'">−</button>'+
+    '<span class="qty-num">'+qty+'</span>'+
+    '<button class="qty-btn qty-plus" data-id="'+c.id+'">+</button>'+
+  '</div>'
+:'<button class="order-btn" data-id="'+c.id+'">点单</button>')+
       '</div>';
   }).join('');
   gr.querySelectorAll('.card').forEach(function(card){
     card.addEventListener('click',function(e){
-      if(e.target.closest('.order-btn'))return;
+if(e.target.closest('.order-btn'))return;
+if(e.target.closest('.qty-btn'))return;
+if(e.target.closest('.qty-bar'))return;
       showDetail(card.dataset.id);
+    });
+  });
+  gr.querySelectorAll('.qty-minus').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      toggleOrder(btn.dataset.id,-1);
+    });
+  });
+  gr.querySelectorAll('.qty-plus').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      toggleOrder(btn.dataset.id,1);
     });
   });
 
@@ -472,21 +498,40 @@ function renderGlassSvg(key,sz){
 }
 
 /* ===== 点单逻辑 ===== */
-function toggleOrder(id){
-  var idx=orders.indexOf(id);
-  if(idx>=0){orders.splice(idx,1);showToast('已取消')}
-  else{orders.push(id);showToast('已选择')}
+function toggleOrder(id,delta){
+  if(delta===undefined)delta=1;
+  var idx=-1;
+  orders.forEach(function(o,i){if(o.id===id)idx=i});
+  if(idx>=0){
+    orders[idx].qty+=delta;
+    if(orders[idx].qty<=0){orders.splice(idx,1);showToast('已移除')}
+    else{showToast('×'+orders[idx].qty)}
+  }else{
+    if(delta>0){orders.push({id:id,qty:delta});showToast('已选择')}
+  }
   renderMenu();
   updateBottomBar();
 }
 
+function getOrderQty(id){
+  for(var i=0;i<orders.length;i++){if(orders[i].id===id)return orders[i].qty}
+  return 0;
+}
+
+function getOrdersTotal(){
+  var total=0;
+  orders.forEach(function(o){
+    if(PRICES[o.id])total+=PRICES[o.id]*o.qty;
+  });
+  return total;
+}
+
 function updateBottomBar(){
   var bar=document.getElementById('bottomBar');
-  document.getElementById('orderNum').textContent=orders.length;
-  var total=0;
-  orders.forEach(function(id){
-    if(PRICES[id])total+=PRICES[id];
-  });
+  var totalCups=0;
+  orders.forEach(function(o){totalCups+=o.qty});
+  document.getElementById('orderNum').textContent=totalCups;
+  var total=getOrdersTotal();
   var totalEl=document.getElementById('orderTotal');
   if(total>0){totalEl.textContent='¥'+total;totalEl.style.display='';}
   else{totalEl.style.display='none';}
@@ -501,15 +546,16 @@ function showOrderList(){
     el.innerHTML='<li style="text-align:center;color:var(--td);padding:20px;font-size:.86rem">还没有选择任何鸡尾酒</li>';
   }else{
     var total=0;
-    el.innerHTML=orders.map(function(id){
-      var c=C.find(function(x){return x.id===id});
+    el.innerHTML=orders.map(function(o){
+      var c=C.find(function(x){return x.id===o.id});
       if(!c)return '';
-      var price=PRICES[id]||0;
-      if(price)total+=price;
+      var price=PRICES[o.id]||0;
+      var lineTotal=price*o.qty;
+      if(lineTotal)total+=lineTotal;
       return '<li class="order-item">'+
-        '<span class="order-item-name">'+c.name+'<small>'+(c.nameEn||'')+'</small></span>'+
-        (price?'<span class="order-item-price">¥'+price+'</span>':'')+
-        '<button class="order-item-remove" data-id="'+id+'">&times;</button>'+
+        '<span class="order-item-name">'+c.name+(o.qty>1?' ×'+o.qty:'')+'<small>'+(c.nameEn||'')+'</small></span>'+
+        (lineTotal?'<span class="order-item-price">¥'+lineTotal+'</span>':'')+
+        '<button class="order-item-remove" data-id="'+o.id+'">&times;</button>'+
       '</li>';
     }).join('');
     if(total>0){
@@ -520,7 +566,10 @@ function showOrderList(){
     }
     el.querySelectorAll('.order-item-remove').forEach(function(btn){
       btn.addEventListener('click',function(){
-        toggleOrder(btn.dataset.id);
+        var id=btn.dataset.id;
+        orders=orders.filter(function(o){return o.id!==id});
+        updateBottomBar();
+        renderMenu();
         showOrderList();
       });
     });
@@ -543,9 +592,9 @@ function clearOrders(){
 /* ===== 提交订单 ===== */
 async function submitOrders(){
   if(!orders.length){showToast('请先选择鸡尾酒');return}
-  var orderItems=orders.map(function(id){
-    var c=C.find(function(x){return x.id===id});
-    return c?{id:c.id,name:c.name,nameEn:c.nameEn}:{id:id,name:'未知',nameEn:''};
+var orderItems=orders.map(function(o){
+    var c=C.find(function(x){return x.id===o.id});
+    return c?{id:c.id,name:c.name,nameEn:c.nameEn,qty:o.qty,price:PRICES[o.id]||0}:{id:o.id,name:'未知',nameEn:'',qty:o.qty,price:0};
   });
   var orderData={
     id:'order_'+Date.now(),
@@ -774,7 +823,8 @@ function showDetail(id){
   var catLabel=catObj?catObj.emoji+' '+catObj.name:c.cat;
   var strLabels={light:'轻度 Light',medium:'中度 Medium',strong:'强烈 Strong'};
   var glassObj=GLASSES[c.g]||{};
-  var ordered=orders.indexOf(c.id)>=0;
+var qty=getOrderQty(c.id);
+var ordered=qty>0;
   document.getElementById('detailContent').innerHTML=
     '<div class="detail-glass">'+renderGlassSvg(c.g,70)+'</div>'+
     '<div class="detail-name">'+c.name+'</div>'+
@@ -786,7 +836,13 @@ function showDetail(id){
     '</div>'+
     (PRICES[c.id]?'<div class="detail-price">¥'+PRICES[c.id]+'</div>':'')+
     '<div class="detail-desc">'+(c.desc||'暂无描述')+'</div>'+
-    '<button class="detail-order'+(ordered?' ordered':'')+'" onclick="detailOrder(\''+c.id+'\')">'+(ordered?'已选择':'点单')+'</button>';
+(ordered?
+  '<div class="qty-bar" style="margin-top:12px" data-id="'+c.id+'">'+
+    '<button class="qty-btn qty-minus" onclick="event.stopPropagation();toggleOrder(\''+c.id+'\',-1);showDetail(\''+c.id+'\')">−</button>'+
+    '<span class="qty-num">'+qty+'</span>'+
+    '<button class="qty-btn qty-plus" onclick="event.stopPropagation();toggleOrder(\''+c.id+'\',1);showDetail(\''+c.id+'\')">+</button>'+
+  '</div>'
+:'<button class="detail-order" onclick="detailOrder(\''+c.id+'\')">点单</button>');
   document.getElementById('detailOv').classList.add('on');
 }
 function closeDetail(){document.getElementById('detailOv').classList.remove('on')}

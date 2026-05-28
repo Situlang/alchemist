@@ -608,6 +608,10 @@ function clearOrders(){
 
 /* ===== 提交订单 ===== */
 async function submitOrders(){
+var _lastSubmit=0;
+var now=Date.now();
+if(now-_lastSubmit<10000){showToast('请等待10秒后再提交');return}
+_lastSubmit=now;
   if(!orders.length){showToast('请先选择鸡尾酒');return}
 var orderItems=orders.map(function(o){
     var c=C.find(function(x){return x.id===o.id});

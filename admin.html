@@ -290,12 +290,14 @@ var _lastOrderCount = 0;
 var _refreshTimer = null;
 
 /* ===== 初始化 ===== */
-async function init() {
-  var loaded = await loadData();
-  if (!loaded) {
-    showToast('无法加载数据，请检查同步设置');
+async function init(){
+  var loggedIn=await checkLogin();
+  if(!loggedIn){
+    document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#5a554e;font-family:DM Mono,monospace;font-size:.85rem;flex-direction:column;gap:12px"><div style="font-size:2rem">🔒</div><div>未授权访问</div></div>';
     return;
   }
+  var loaded=await loadData();
+  if(!loaded){showToast('无法加载数据，请检查同步设置');return}
   buildMap();
   setupFilters();
   await refreshOrders();
@@ -814,7 +816,21 @@ async function toggleHide(id) {
     await saveHidden();
     renderHideList(document.getElementById('hideSearch').value.trim());
 }
-
+/* ===== 登录验证 ===== */
+var ADMIN_HASH='fea8661bc3cbcbd745d23502b87f4c130298ac9a368d44c4518b7915fb4a44e2';
+async function checkLogin(){
+  if(sessionStorage.getItem('admin_logged')==='true')return true;
+  var pwd=prompt('请输入管理密码：');
+  if(pwd===null)return false;
+  var buf=new TextEncoder().encode(pwd);
+  var hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',buf))).map(function(b){return b.toString(16).padStart(2,'0')}).join('');
+  if(hash===ADMIN_HASH){
+    sessionStorage.setItem('admin_logged','true');
+    return true;
+  }
+  alert('密码错误');
+  return false;
+}
 </script>
 </body>
 </html>

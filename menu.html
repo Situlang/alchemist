@@ -199,8 +199,6 @@ h1 span{color:var(--ac)}
     <input type="text" id="menuSearch" placeholder="搜索鸡尾酒名称、基酒、描述..." />
     <button class="search-clear" id="searchClear">&times;</button>
   </div>
-  <button class="wheel-trigger" id="wheelTrigger" title="随机选择">...</button>
-</div>
 <button class="wheel-trigger" id="wheelTrigger" title="随机选择">
 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M21.5 2v6h-6"/>
@@ -600,22 +598,6 @@ function updateWheelData(){
     document.getElementById('wCnt').textContent=wData.length+' 款';
     document.getElementById('wSpin').disabled=wData.length<2;
 }
-
-function drawWheel(){
-    var cv=document.getElementById('wCv');
-    var ctx=cv.getContext('2d');
-    var cx=cv.width/2,cy=cv.height/2,r=cx-8;
-    ctx.clearRect(0,0,cv.width,cv.height);
-
-    if(!wData.length){
-        ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-        ctx.fillStyle=GC.fk;ctx.fill();
-        ctx.strokeStyle=GC.bk;ctx.lineWidth=2;ctx.stroke();
-        ctx.fillStyle=GC.dk;ctx.font='24px "Noto Serif SC"';
-        ctx.textAlign='center';ctx.textBaseline='middle';
-        ctx.fillText('无数据',cx,cy);
-        return;
-    }
 
     var n=wData.length;
     var sliceAngle=Math.PI*2/n;

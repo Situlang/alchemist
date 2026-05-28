@@ -214,6 +214,7 @@ h1 span{color:var(--ac)}
 .qty-btn:hover{background:rgba(0,0,0,.15)}
 .qty-btn:active{background:rgba(0,0,0,.25)}
 .qty-num{font-family:var(--fd);font-size:1.1rem;font-weight:700;color:var(--bg);min-width:40px;text-align:center}
+.no-anim .card{animation:none!important;opacity:1!important;transform:none!important}
 
 </style>
 </head>
@@ -416,6 +417,7 @@ function renderFilters(){
 /* ===== 渲染菜单 ===== */
 function renderMenu(){
   var gr=document.getElementById('menuGrid');
+  gr.classList.add('no-anim');
   var q=(document.getElementById('menuSearch').value||'').toLowerCase().trim();
   var list=C.filter(function(c){
     if(activeFilter!=='all'&&c.cat!==activeFilter)return false;
@@ -467,6 +469,7 @@ var ordered=qty>0;
 :'<button class="order-btn" data-id="'+c.id+'">点单</button>')+
       '</div>';
   }).join('');
+  void gr.offsetHeight;
   gr.querySelectorAll('.card').forEach(function(card){
     card.addEventListener('click',function(e){
 if(e.target.closest('.order-btn'))return;

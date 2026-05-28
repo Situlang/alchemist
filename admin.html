@@ -212,6 +212,7 @@ var GLASSES = {};
 var orders = [];
 var cocktailsMap = {};
 var PRICES = {};
+var PRICES = {};
 var activeFilter = 'pending';
 var _lastOrderCount = 0;
 var _refreshTimer = null;
@@ -249,6 +250,8 @@ async function loadData() {
       C = parsed.cocktails;
       if (parsed.categories) CATS = parsed.categories;
       if (parsed.glasses) GLASSES = parsed.glasses;
+var pf = data.files['alchemist-prices.json'];
+if (pf) { try { PRICES = JSON.parse(pf.content); } catch (e) {} }
       return true;
     }
   } catch (e) { console.log(e); }
@@ -343,7 +346,7 @@ function renderOrders() {
       '<ul class="order-items">' + itemsHtml + '</ul>' +
       '<div class="order-actions">' +
         (o.status === 'pending' ?
-          '<button class="act-btn primary" style="padding:6px 16px;font-size:.76rem" onclick="completeOrder(\'' + o.id + '\')">完成制作</button>' : '') +
+          '<button class="act-btn primary" style="padding:6px 16px;font-size:.76rem" onclick="completeOrder(\'' + o.id + '\')">完成制作</button>' : '') +'<button class="act-btn" style="padding:6px 16px;font-size:.76rem" onclick="editOrderPrices(\'' + o.id + '\')">设置价格</button>' +
         '<button class="act-btn danger" style="padding:6px 16px;font-size:.76rem" onclick="removeOrder(\'' + o.id + '\')">删除</button>' +
       '</div>' +
     '</div>';
@@ -423,6 +426,57 @@ async function saveOrders(){
     });
   }catch(e){console.log('保存失败',e);}
 }
+async function savePrices() {
+    if (!GIST_TOKEN || !GIST_ID) return;
+    try {
+        await fetch('https://api.github.com/gists/' + GIST_ID, {
+            method: 'PATCH',
+            headers: { 'Authorization': 'token ' + GIST_TOKEN, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ files: { 'alchemist-prices.json': { content: JSON.stringify(PRICES, null, 2) } } })
+        });
+    } catch (e) { console.log('价格保存失败', e); }
+}
+function editOrderPrices(orderId) {
+    var o = orders.find(function(x) { return x.id === orderId; });
+    if (!o) return;
+    var html = '<div style="margin-bottom:16px">';
+    o.items.forEach(function(item) {
+        var c = cocktailsMap[item.id];
+        var current = PRICES[item.id] || '';
+        html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd)">' +
+            '<span style="flex:1;font-size:.88rem">' + item.name + (item.nameEn ? ' <small style="color:var(--td)">' + item.nameEn + '</small>' : '') + '</span>' +
+            '<span style="font-family:var(--fm);font-size:.72rem;color:var(--td)">¥</span>' +
+            '<input type="number" min="0" step="1" class="price-input" data-id="' + item.id + '" value="' + current + '" style="width:70px;padding:5px 8px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);color:var(--ac);font-family:var(--fm);font-size:.82rem;text-align:center;outline:none">' +
+            '</div>';
+    });
+    html += '</div>';
+
+    document.getElementById('recipeBody').innerHTML = html;
+    document.querySelector('#recipeOv .mh h2').textContent = '设置价格';
+    var footer = document.createElement('div');
+    footer.style.cssText = 'display:flex;gap:12px;justify-content:flex-end;padding-top:16px;border-top:1px solid var(--bd)';
+    footer.innerHTML = '<button class="bc" onclick="closeRecipe()">取消</button>' +
+        '<button class="bs" onclick="saveOrderPrices()">保存</button>';
+    document.getElementById('recipeBody').appendChild(footer);
+    document.getElementById('recipeOv').classList.add('on');
+}
+
+function saveOrderPrices() {
+    var inputs = document.querySelectorAll('.price-input');
+    inputs.forEach(function(inp) {
+        var id = inp.dataset.id;
+        var val = parseFloat(inp.value);
+        if (!isNaN(val) && val > 0) {
+            PRICES[id] = val;
+        } else {
+            delete PRICES[id];
+        }
+    });
+    savePrices();
+    closeRecipe();
+    showToast('价格已保存');
+}
+
 
 /* ===== 查看配方详情 ===== */
 function showRecipe(id) {

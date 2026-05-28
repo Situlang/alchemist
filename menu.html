@@ -193,9 +193,6 @@ h1 span{color:var(--ac)}
 .order-total-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;margin-top:4px;border-top:2px solid var(--ac)}
 .order-total-label{font-family:var(--fd);font-size:.92rem;font-weight:600}
 .order-total-amount{font-family:var(--fm);font-size:1.2rem;color:var(--ac)}
-.price-set{display:flex;align-items:center;gap:8px;position:absolute;right:10px;top:50%;transform:translateY(-50%)}
-.price-set input{width:60px;padding:4px 6px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);color:var(--ac);font-family:var(--fm);font-size:.78rem;text-align:center;outline:none}
-.price-set input:focus{border-color:var(--ac)}
 
 </style>
 </head>
@@ -419,10 +416,7 @@ function renderMenu(){
 '<div class="card-en">'+(c.nameEn||'')+'</div>'+
 (PRICES[c.id]?'<div class="card-price">¥ <span>'+PRICES[c.id]+'</span></div>':'')+
 '<div class="card-desc">'+(c.desc||'')+'</div>'+
-      '<button class="order-btn'+(ordered?' ordered':'')+'" data-id="'+c.id+'">'+(ordered?'已选择':'点单')+'</button>'+'<div style="display:flex;align-items:center;gap:6px;margin-top:8px;justify-content:center">'+
-(PRICES[c.id]?'<span style="font-family:var(--fm);font-size:.68rem;color:var(--td)">长按卡片设置价格</span>':'')+
-'</div>'+
-    '</div>';
+      '<button class="order-btn'+(ordered?' ordered':'')+'" data-id="'+c.id+'">'+(ordered?'已选择':'点单')+'</button>'+
   }).join('');
 
   gr.querySelectorAll('.order-btn').forEach(function(btn){
@@ -431,34 +425,6 @@ function renderMenu(){
       toggleOrder(btn.dataset.id);
     });
   });
-  gr.querySelectorAll('.card').forEach(function(card){
-    var timer=null;
-    card.addEventListener('touchstart',function(){timer=setTimeout(function(){editPrice(card.dataset.id)},600)});
-    card.addEventListener('touchend',function(){clearTimeout(timer)});
-    card.addEventListener('touchmove',function(){clearTimeout(timer)});
-    card.addEventListener('contextmenu',function(e){
-      e.preventDefault();
-      editPrice(card.dataset.id);
-    });
-  });
-}
-
-function editPrice(id){
-  var c=C.find(function(x){return x.id===id});
-  if(!c)return;
-  var current=PRICES[id]||'';
-  var price=prompt(c.name+' 的价格（元），留空取消：',current);
-  if(price===null)return;
-  price=price.trim();
-  if(price===''){delete PRICES[id]}
-  else{
-    var num=parseFloat(price);
-    if(isNaN(num)||num<0){showToast('请输入有效价格');return}
-    PRICES[id]=num;
-  }
-  savePrices();
-  renderMenu();
-  showToast(PRICES[id]?'已设置价格 ¥'+PRICES[id]:'已取消价格');
 }
 
 function findCat(key){
